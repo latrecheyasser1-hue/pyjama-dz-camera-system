@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Clock, Radio, AlertTriangle, FileText } from 'lucide-react';
+import { Shield, Clock, Radio, AlertTriangle, FileText, Users } from 'lucide-react';
 import LiveCameraFeed from './components/LiveCameraFeed';
 import IncidentTimeline from './components/IncidentTimeline';
 import CaisseMetrics from './components/CaisseMetrics';
 import MidnightReports from './components/MidnightReports';
 import SimulationControls from './components/SimulationControls';
 import ZoneEditor from './components/ZoneEditor';
+import WorkersReport from './components/WorkersReport';
 
 export default function App() {
   const [activeCamera, setActiveCamera] = useState('cam_hanout_caisse');
@@ -57,6 +58,18 @@ export default function App() {
           </button>
 
           <button
+            onClick={() => setActiveTab('workers')}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-bold transition-all ${
+              activeTab === 'workers'
+                ? 'bg-white text-slate-900 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Users className="w-3.5 h-3.5" />
+            سجل أداء العمال والأخطاء
+          </button>
+
+          <button
             onClick={() => setActiveTab('reports')}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-bold transition-all ${
               activeTab === 'reports'
@@ -94,13 +107,19 @@ export default function App() {
                 onOpenZoneEditor={() => setIsZoneEditorOpen(true)}
               />
 
-              <MidnightReports />
+              <WorkersReport />
             </div>
 
             {/* Right 1 Col: Incidents Timeline */}
             <div className="lg:col-span-1">
               <IncidentTimeline onNewAlert={handleNewAlert} />
             </div>
+          </div>
+        )}
+
+        {activeTab === 'workers' && (
+          <div className="space-y-5">
+            <WorkersReport />
           </div>
         )}
 

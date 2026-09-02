@@ -25,11 +25,6 @@ class FaceRecognizer:
         self.faces_dir = FACES_DIR
         self.workers: Dict[str, dict] = {}
         self.known_face_templates: Dict[str, np.ndarray] = {}
-        
-        # Load OpenCV Face Detector (Haar Cascade / DNN for ultra-fast local inference)
-        cascade_path = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
-        self.face_cascade = cv2.CascadeClassifier(cascade_path)
-        
         self.load_registry()
 
     def load_registry(self):
@@ -99,8 +94,8 @@ class FaceRecognizer:
                 if filepath.exists():
                     img = cv2.imread(str(filepath), cv2.IMREAD_GRAYSCALE)
                     if img is not None:
-                        # Resize to standard template size (100x100)
-                        resized = cv2.resize(img, (100, 100))
+                        # Resize to standard template size (80x80)
+                        resized = cv2.resize(img, (80, 80))
                         self.known_face_templates[wid] = resized
                         print(f"[FaceRecognizer] Enrolled Face Template loaded for: {data['full_name']}")
 
@@ -136,13 +131,7 @@ class FaceRecognizer:
             # Process face template
             img = cv2.imdecode(np.frombuffer(photo_bytes, np.uint8), cv2.IMREAD_GRAYSCALE)
             if img is not None:
-                faces = self.face_cascade.detectMultiScale(img, 1.1, 4)
-                if len(faces) > 0:
-                    x, y, w, h = faces[0]
-                    face_roi = img[y:y+h, x:x+w]
-                    resized = cv2.resize(face_roi, (100, 100))
-                else:
-                    resized = cv2.resize(img, (100, 100))
+                resized = cv2.resize(img, (80, 80))
                 self.known_face_templates[worker_id] = resized
 
         worker_data = {
@@ -175,35 +164,29 @@ class FaceRecognizer:
         if (x2 - x1) < 20 or (y2 - y1) < 20:
             return ("unknown", "غير معروف", 0.0)
 
-        person_crop = frame[y1:y2, x1:x2]
-        gray = cv2.cvtColor(person_crop, cv2.COLOR_BGR2GRAY)
+        # Upper 40% of the body contains the head/face region
+        upper_height = int((y2 - y1) * 0.45)
+        if upper_height > 20 and (x2 - x1) > 20:
+            head_crop = frame[y1:y1+upper_height, x1:x2]
+            gray = cv2.cvtColor(head_crop, cv2.COLOR_BGR2GRAY)
+            head_resized = cv2.resize(gray, (80, 80))
 
-        # Detect face in the upper 40% of the person body
-        upper_body = gray[:int((y2-y1)*0.45), :]
-        if upper_body.shape[0] > 20 and upper_body.shape[1] > 20:
-            faces = self.face_cascade.detectMultiScale(upper_body, 1.1, 3, minSize=(25, 25))
-            if len(faces) > 0:
-                fx, fy, fw, fh = faces[0]
-                face_crop = cv2.resize(upper_body[fy:fy+fh, fx:fx+fw], (100, 100))
+            best_score = float('inf')
+            best_wid = None
 
-                # Match against known templates
-                best_score = float('inf')
-                best_wid = None
+            for wid, template in self.known_face_templates.items():
+                res = cv2.matchTemplate(head_resized, template, cv2.TM_SQDIFF_NORMED)
+                score = float(res[0][0])
+                if score < best_score:
+                    best_score = score
+                    best_wid = wid
 
-                for wid, template in self.known_face_templates.items():
-                    # Normalized Mean Squared Error / Template match
-                    res = cv2.matchTemplate(face_crop, template, cv2.TM_SQDIFF_NORMED)
-                    score = res[0][0]
-                    if score < best_score:
-                        best_score = score
-                        best_wid = wid
+            if best_wid and best_score < 0.65:
+                worker = self.workers.get(best_wid, {})
+                confidence = round((1.0 - best_score) * 100, 1)
+                return (best_wid, worker.get("full_name", "عامل"), confidence)
 
-                if best_wid and best_score < 0.65:
-                    worker = self.workers.get(best_wid, {})
-                    confidence = round((1.0 - best_score) * 100, 1)
-                    return (best_wid, worker.get("full_name", "عامل"), confidence)
-
-        # Fallback to location assignment if worker assigned to this station is on duty
+        # Fallback to location assignment
         for wid, worker in self.workers.items():
             if worker.get("location") == expected_location and worker.get("status") == "active":
                 return (wid, worker.get("full_name", "عامل"), 85.0)

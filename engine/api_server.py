@@ -6,6 +6,7 @@ import os
 import cv2
 import time
 from pathlib import Path
+from typing import Optional
 from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, FileResponse

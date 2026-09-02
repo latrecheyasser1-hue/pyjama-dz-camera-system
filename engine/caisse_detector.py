@@ -96,8 +96,8 @@ class CaisseDetector:
 
     def _trigger_no_customer_drawer_alert(self, event_time: float):
         self.last_event_time = event_time
-        title = "فتح درج النقود بدون وجود زبون (No Customer)"
-        details = "تم فتح درج النقود (La Caisse) في غياب أي زبون أمام الكونتوار. حركة مشبوهة تتطلب المراجعة."
+        title = "فتح درج النقود بدون وجود زبون"
+        details = "تم فتح درج النقود في غياب أي زبون أمام الكونتوار. حركة مشبوهة تتطلب المراجعة."
         print(f"[CaisseDetector] TRIGGERED: {title}")
 
         self._record_and_dispatch_event(

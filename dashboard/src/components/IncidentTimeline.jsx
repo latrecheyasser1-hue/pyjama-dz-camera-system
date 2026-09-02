@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldAlert, Play, Clock, AlertTriangle, CheckCircle2, Tag, FileText, X, Video } from 'lucide-react';
+import { ShieldAlert, Play, Clock, AlertTriangle, CheckCircle2, Tag, FileText, X, Video, Trash2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 export default function IncidentTimeline({ onNewAlert }) {
@@ -7,6 +7,7 @@ export default function IncidentTimeline({ onNewAlert }) {
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
+  const [clearing, setClearing] = useState(false);
 
   useEffect(() => {
     async function fetchEvents() {
@@ -42,6 +43,19 @@ export default function IncidentTimeline({ onNewAlert }) {
     };
   }, []);
 
+  const handleClearLogs = async () => {
+    if (!confirm('هل تريد مسح سجل التنبيهات التجريبية بالكامل؟')) return;
+    setClearing(true);
+    try {
+      await supabase.from('security_events').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      setEvents([]);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setClearing(false);
+    }
+  };
+
   const filteredEvents = events.filter((ev) => {
     if (filter === 'critical') return ev.severity === 'critical';
     if (filter === 'discount') return ev.event_type === 'suspicious_reach' || ev.title.includes('تخفيض');
@@ -76,22 +90,36 @@ export default function IncidentTimeline({ onNewAlert }) {
   return (
     <div className="card-clean rounded-xl p-4 flex flex-col h-full space-y-4">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center text-rose-600 border border-rose-200">
-            <ShieldAlert className="w-4 h-4" />
+      <div className="space-y-3 pb-3 border-b border-slate-100">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center text-rose-600 border border-rose-200">
+              <ShieldAlert className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900">سجل التنبيهات الأمنية</h3>
+              <p className="text-[11px] text-slate-500">مزامنة سحابية لحظية</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-sm font-bold text-slate-900">سجل التنبيهات الأمنية</h3>
-            <p className="text-[11px] text-slate-500">مزامنة سحابية لحظية</p>
-          </div>
+
+          {events.length > 0 && (
+            <button
+              onClick={handleClearLogs}
+              disabled={clearing}
+              title="مسح سجل التجارب"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-all text-xs flex items-center gap-1"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>مسح</span>
+            </button>
+          )}
         </div>
 
         {/* Filter Pills */}
         <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200 text-xs">
           <button
             onClick={() => setFilter('all')}
-            className={`px-2.5 py-0.5 rounded text-xs transition-all ${
+            className={`flex-1 py-1 rounded text-xs transition-all ${
               filter === 'all' ? 'bg-white text-slate-900 font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -99,7 +127,7 @@ export default function IncidentTimeline({ onNewAlert }) {
           </button>
           <button
             onClick={() => setFilter('critical')}
-            className={`px-2.5 py-0.5 rounded text-xs transition-all ${
+            className={`flex-1 py-1 rounded text-xs transition-all ${
               filter === 'critical' ? 'bg-rose-600 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -107,7 +135,7 @@ export default function IncidentTimeline({ onNewAlert }) {
           </button>
           <button
             onClick={() => setFilter('discount')}
-            className={`px-2.5 py-0.5 rounded text-xs transition-all ${
+            className={`flex-1 py-1 rounded text-xs transition-all ${
               filter === 'discount' ? 'bg-white text-slate-900 font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -117,13 +145,13 @@ export default function IncidentTimeline({ onNewAlert }) {
       </div>
 
       {/* Events List */}
-      <div className="space-y-2.5 overflow-y-auto max-h-[500px] pr-1">
+      <div className="space-y-3 overflow-y-auto max-h-[520px] pr-1">
         {loading ? (
           <div className="py-8 text-center text-xs text-slate-400">جارٍ جلب السجل...</div>
         ) : filteredEvents.length === 0 ? (
           <div className="py-8 text-center text-xs text-slate-400">
             <CheckCircle2 className="w-6 h-6 text-emerald-500 mx-auto mb-2" />
-            لا توجد تنبيهات أمنية مسجلة.
+            لا توجد تنبيهات أمنية مسجلة حالياً.
           </div>
         ) : (
           filteredEvents.map((item) => {
@@ -133,35 +161,41 @@ export default function IncidentTimeline({ onNewAlert }) {
               second: '2-digit'
             });
 
+            // Clean title from English brackets if any
+            const cleanTitle = item.title.replace(/\s*\(No Customer\)/gi, '').replace(/\s*\(Customer/gi, '');
+
             return (
               <div
                 key={item.id}
                 className="bg-slate-50/70 rounded-lg p-3 border border-slate-200 hover:border-slate-300 transition-all flex flex-col gap-2"
               >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono text-slate-500" dir="ltr">{timeFormatted}</span>
-                      {getSeverityBadge(item.severity, item.event_type)}
-                    </div>
-                    <h4 className="text-xs font-bold text-slate-900">{item.title}</h4>
-                  </div>
+                {/* Top Row: Time & Badge */}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono text-slate-500 font-bold" dir="ltr">{timeFormatted}</span>
+                  {getSeverityBadge(item.severity, item.event_type)}
+                </div>
 
+                {/* Title */}
+                <h4 className="text-xs font-bold text-slate-900 leading-snug">{cleanTitle}</h4>
+
+                {/* Description */}
+                <p className="text-[11px] text-slate-600 leading-relaxed">{item.description}</p>
+
+                {/* Video Clip Button */}
+                <div className="pt-1 flex items-center justify-end">
                   <button
                     onClick={() => {
                       const videoUrl = item.local_clip_path
                         ? `http://localhost:8000/clips/${item.local_clip_path.split('\\').pop().split('/').pop()}`
                         : 'http://localhost:8000/clips/sample.mp4';
-                      setSelectedVideo({ url: videoUrl, title: item.title, time: timeFormatted });
+                      setSelectedVideo({ url: videoUrl, title: cleanTitle, time: timeFormatted });
                     }}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-white text-slate-700 border border-slate-300 text-[11px] font-semibold hover:bg-slate-50 shadow-xs transition-all shrink-0"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-white text-slate-700 border border-slate-300 text-[11px] font-semibold hover:bg-slate-50 shadow-xs transition-all"
                   >
                     <Video className="w-3 h-3 text-slate-600" />
                     مشاهدة المقطع
                   </button>
                 </div>
-
-                <p className="text-[11px] text-slate-600 line-clamp-2 leading-relaxed">{item.description}</p>
               </div>
             );
           })
@@ -171,7 +205,7 @@ export default function IncidentTimeline({ onNewAlert }) {
       {/* Video Replay Modal */}
       {selectedVideo && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="card-clean w-full max-w-2xl rounded-xl p-4 border border-slate-200 shadow-2xl relative">
+          <div className="card-clean w-full max-w-2xl rounded-xl p-4 border border-slate-200 shadow-2xl relative bg-white">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
               <div>
                 <h4 className="text-sm font-bold text-slate-900">{selectedVideo.title}</h4>

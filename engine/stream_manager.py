@@ -103,29 +103,19 @@ class StreamManager:
 
             # Scenario rotation for demonstration
             cycle = t % 600 # 600 frames at 15 FPS = 40 seconds cycle
-            if 50 <= cycle < 180:
-                # Customer present, normal sale, drawer open with customer
-                self.sim_state["customer_present"] = True
-                self.sim_state["cashier_present"] = True
-                self.sim_state["drawer_open"] = (100 <= cycle <= 150)
-                self.sim_state["sim_scenario"] = "normal_sale"
-            elif 240 <= cycle < 350:
-                # Suspicious: Drawer open WITHOUT customer present!
-                self.sim_state["customer_present"] = False
-                self.sim_state["cashier_present"] = True
-                self.sim_state["drawer_open"] = (260 <= cycle <= 330)
-                self.sim_state["sim_scenario"] = "theft_no_customer"
-            elif 400 <= cycle < 520:
-                # Cashier left caisse open and walked away!
-                self.sim_state["customer_present"] = False
-                self.sim_state["cashier_present"] = False # Cashier stepped away
-                self.sim_state["drawer_open"] = True
-                self.sim_state["sim_scenario"] = "unattended_caisse"
-            else:
-                self.sim_state["customer_present"] = False
-                self.sim_state["cashier_present"] = True
-                self.sim_state["drawer_open"] = False
-                self.sim_state["sim_scenario"] = "idle"
+            # Default State: Normal cashier present, drawer closed, customer visits periodically
+            if not self.sim_state.get("manual_override", False):
+                # Normal calm operation: Customer present occasionally, drawer opens only during legitimate sale
+                if 100 <= cycle < 250:
+                    self.sim_state["customer_present"] = True
+                    self.sim_state["cashier_present"] = True
+                    self.sim_state["drawer_open"] = False
+                    self.sim_state["sim_scenario"] = "customer_at_counter"
+                else:
+                    self.sim_state["customer_present"] = False
+                    self.sim_state["cashier_present"] = True
+                    self.sim_state["drawer_open"] = False
+                    self.sim_state["sim_scenario"] = "idle"
 
             # Create base room background
             frame = np.zeros((height, width, 3), dtype=np.uint8)

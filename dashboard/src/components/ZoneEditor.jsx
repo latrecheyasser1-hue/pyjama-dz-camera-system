@@ -47,7 +47,7 @@ export default function ZoneEditor({ isOpen, onClose, activeCamera = 'cam_hanout
       }
       if (points.length === 4) {
         ctx.closePath();
-        ctx.fillStyle = zoneType === 'caisse' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(59, 130, 246, 0.2)';
+        ctx.fillStyle = zoneType === 'caisse' ? 'rgba(239, 68, 68, 0.25)' : 'rgba(59, 130, 246, 0.25)';
         ctx.fill();
       }
       ctx.strokeStyle = zoneType === 'caisse' ? '#ef4444' : '#3b82f6';
@@ -98,30 +98,30 @@ export default function ZoneEditor({ isOpen, onClose, activeCamera = 'cam_hanout
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
-      <div className="card-clean w-full max-w-4xl rounded-xl p-5 border border-slate-700 shadow-2xl relative">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+      <div className="card-clean w-full max-w-4xl rounded-xl p-5 border border-slate-200 shadow-2xl relative bg-white">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-amber-500 border border-slate-700">
+            <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700 border border-slate-200">
               <Shield className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-white">رسم وتحديد منطقة الحراسة (Zone ROI)</h3>
-              <p className="text-[11px] text-slate-400">
+              <h3 className="text-sm font-bold text-slate-900">رسم وتحديد منطقة الحراسة (Zone ROI)</h3>
+              <p className="text-[11px] text-slate-500">
                 انقر بالماوس لتحديد النقاط الأربعة لمنطقة المراقبة
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition-all"
+            className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          <div className="lg:col-span-2 relative aspect-video bg-black rounded-lg overflow-hidden border border-slate-800 cursor-crosshair">
+          <div className="lg:col-span-2 relative aspect-video bg-black rounded-lg overflow-hidden border border-slate-200 cursor-crosshair">
             <img
               src={`http://localhost:8000/stream/${activeCamera}?ai=false`}
               alt="Snapshot"
@@ -134,28 +134,28 @@ export default function ZoneEditor({ isOpen, onClose, activeCamera = 'cam_hanout
               onClick={handleCanvasClick}
               className="absolute inset-0 w-full h-full"
             />
-            <div className="absolute bottom-2 right-2 bg-slate-900/90 px-2 py-0.5 rounded text-[11px] text-slate-300 border border-slate-700">
+            <div className="absolute bottom-2 right-2 bg-white/90 px-2 py-0.5 rounded text-[11px] text-slate-800 border border-slate-200 shadow-xs">
               {points.length}/4 نقاط محددة
             </div>
           </div>
 
           <div className="space-y-3.5">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">اسم المنطقة:</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">اسم المنطقة:</label>
               <input
                 type="text"
                 value={zoneName}
                 onChange={(e) => setZoneName(e.target.value)}
-                className="w-full bg-[#090d16] border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:border-slate-600 focus:outline-none"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-900 focus:border-slate-400 focus:bg-white focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">نوع المنطقة:</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">نوع المنطقة:</label>
               <select
                 value={zoneType}
                 onChange={(e) => setZoneType(e.target.value)}
-                className="w-full bg-[#090d16] border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:border-slate-600 focus:outline-none"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-900 focus:border-slate-400 focus:bg-white focus:outline-none"
               >
                 <option value="caisse">منطقة لاكيس ودرج النقود</option>
                 <option value="queue">منطقة طابور وانتظار الزبائن</option>
@@ -166,24 +166,24 @@ export default function ZoneEditor({ isOpen, onClose, activeCamera = 'cam_hanout
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
                 مدة الإنذار (بالثواني):
               </label>
               <input
                 type="number"
                 value={thresholdSeconds}
                 onChange={(e) => setThresholdSeconds(e.target.value)}
-                className="w-full bg-[#090d16] border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:border-slate-600 focus:outline-none"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-900 focus:border-slate-400 focus:bg-white focus:outline-none"
               />
-              <span className="text-[10px] text-slate-400">
+              <span className="text-[10px] text-slate-500">
                 (يتم إطلاق تنبيه إذا تركت لاكيس مفتوحة أكثر من {thresholdSeconds} ثانية)
               </span>
             </div>
 
-            <div className="pt-2 border-t border-slate-800 flex items-center justify-between gap-2">
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
               <button
                 onClick={() => setPoints([])}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all"
               >
                 <RotateCcw className="w-3 h-3" />
                 إعادة ضبط
@@ -195,7 +195,7 @@ export default function ZoneEditor({ isOpen, onClose, activeCamera = 'cam_hanout
                 className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   successMsg
                     ? 'bg-emerald-600 text-white'
-                    : 'bg-amber-500 text-slate-950 hover:bg-amber-400 disabled:opacity-50'
+                    : 'bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50'
                 }`}
               >
                 <Check className="w-3.5 h-3.5" />

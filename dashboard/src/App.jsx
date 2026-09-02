@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Camera, Bell, Sparkles, Sliders, ExternalLink, Clock, Radio, Activity, AlertTriangle, FileText, CheckCircle2 } from 'lucide-react';
+import { Shield, Camera, Bell, Sliders, ExternalLink, Clock, Radio, Activity, AlertTriangle, FileText, CheckCircle2 } from 'lucide-react';
 import LiveCameraFeed from './components/LiveCameraFeed';
 import IncidentTimeline from './components/IncidentTimeline';
 import CaisseMetrics from './components/CaisseMetrics';
@@ -29,30 +29,30 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col font-cairo" dir="rtl">
+    <div className="min-h-screen bg-[#f8fafc] text-slate-800 flex flex-col font-cairo" dir="rtl">
       {/* Toast Alert */}
       {latestAlertToast && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50">
-          <div className="bg-rose-950 border border-rose-800 text-rose-200 px-4 py-2.5 rounded-lg shadow-lg flex items-center gap-2.5 text-xs font-bold">
-            <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 shadow-lg">
+          <div className="bg-rose-50 border border-rose-200 text-rose-800 px-4 py-2.5 rounded-lg flex items-center gap-2.5 text-xs font-bold">
+            <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
             <span>تنبيه أمني: {latestAlertToast.title}</span>
           </div>
         </div>
       )}
 
-      {/* Clean Navbar */}
-      <header className="border-b border-slate-800 bg-[#0c121e] px-6 py-3 flex items-center justify-between">
+      {/* Clean White Navbar */}
+      <header className="border-b border-slate-200 bg-white px-6 py-3.5 flex items-center justify-between sticky top-0 z-40 shadow-xs">
         {/* Brand */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-slate-950 font-bold">
+          <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white font-bold">
             <Shield className="w-4 h-4" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-base font-bold text-white tracking-wide font-outfit">
-                PYJAMA DZ <span className="text-xs font-cairo font-semibold text-slate-400">| نظام المراقبة الذكي</span>
+              <h1 className="text-base font-bold text-slate-900 tracking-wide font-outfit">
+                PYJAMA DZ <span className="text-xs font-cairo font-semibold text-slate-500">| نظام المراقبة الذكي</span>
               </h1>
-              <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[10px] font-mono border border-slate-700">
+              <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-mono border border-slate-200">
                 v1.0
               </span>
             </div>
@@ -60,13 +60,13 @@ export default function App() {
         </div>
 
         {/* Center Tabs */}
-        <nav className="hidden md:flex items-center gap-1 bg-[#090d16] p-1 rounded-lg border border-slate-800">
+        <nav className="hidden md:flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
           <button
             onClick={() => setActiveTab('live')}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-bold transition-all ${
               activeTab === 'live'
-                ? 'bg-amber-500 text-slate-950'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-white text-slate-900 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <Radio className="w-3.5 h-3.5" />
@@ -77,8 +77,8 @@ export default function App() {
             onClick={() => setActiveTab('reports')}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-bold transition-all ${
               activeTab === 'reports'
-                ? 'bg-amber-500 text-slate-950'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-white text-slate-900 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <FileText className="w-3.5 h-3.5" />
@@ -88,14 +88,14 @@ export default function App() {
 
         {/* Right Status */}
         <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-1.5 bg-[#090d16] px-3 py-1 rounded-md border border-slate-800 text-xs text-slate-300 font-mono" dir="ltr">
-            <Clock className="w-3.5 h-3.5 text-amber-500" />
+          <div className="hidden sm:flex items-center gap-1.5 bg-slate-100 px-3 py-1 rounded-md border border-slate-200 text-xs text-slate-700 font-mono" dir="ltr">
+            <Clock className="w-3.5 h-3.5 text-slate-500" />
             {currentTime}
           </div>
 
-          <div className="flex items-center gap-1.5 bg-emerald-950/60 border border-emerald-800/60 px-2.5 py-1 rounded-md text-xs font-semibold text-emerald-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-            Supabase Cloud متصل
+          <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-md text-xs font-semibold text-emerald-700">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            Supabase متصل
           </div>
         </div>
       </header>
@@ -142,10 +142,10 @@ export default function App() {
         activeCamera={activeCamera}
       />
 
-      {/* Minimal Footer */}
-      <footer className="border-t border-slate-800/80 py-3 px-6 text-center text-xs text-slate-500 flex items-center justify-between">
+      {/* Minimalist Footer */}
+      <footer className="border-t border-slate-200 bg-white py-3.5 px-6 text-center text-xs text-slate-500 flex items-center justify-between">
         <span>Pyjama DZ Camera Security System - 2026</span>
-        <span className="font-mono text-slate-400 text-[11px]">System Status: All Cameras Operational</span>
+        <span className="font-mono text-slate-500 text-[11px]">System Status: All Cameras Operational</span>
       </footer>
     </div>
   );

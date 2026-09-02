@@ -47,7 +47,7 @@ class POSMonitor:
                 original = 2500.0
                 discount = 1000.0
                 paid = 1500.0
-                print(f"[POSMonitor] ⚠️ Simulating Abnormal Discount: -1000 DA on Ticket #{ticket_counter}")
+                print(f"[POSMonitor] Simulating Abnormal Discount: -1000 DA on Ticket #{ticket_counter}")
                 if self.on_discount_event:
                     self.on_discount_event(original, paid, discount, str(ticket_counter))
             else:

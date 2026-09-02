@@ -27,13 +27,13 @@ export default function SimulationControls({ onTrigger }) {
   };
 
   return (
-    <div className="card-clean rounded-xl p-3.5">
+    <div className="card-clean rounded-xl p-3.5 bg-white">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <PlayCircle className="w-4 h-4 text-amber-500" />
+          <PlayCircle className="w-4 h-4 text-slate-700" />
           <div>
-            <h4 className="text-xs font-bold text-slate-200">أزرار التجربة والمحاكاة الفورية</h4>
-            <p className="text-[11px] text-slate-400">
+            <h4 className="text-xs font-bold text-slate-900">أزرار التجربة والمحاكاة الفورية</h4>
+            <p className="text-[11px] text-slate-500">
               اختبار رد فعل الذكاء الاصطناعي واقتطاع مقطع الفيديو فوراً
             </p>
           </div>
@@ -44,7 +44,7 @@ export default function SimulationControls({ onTrigger }) {
           <button
             onClick={() => handleTestTrigger('no_customer')}
             disabled={loading !== ''}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-950 text-rose-300 border border-rose-800 text-xs font-semibold hover:bg-rose-900 transition-all disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-50 text-rose-700 border border-rose-200 text-xs font-semibold hover:bg-rose-100 transition-all shadow-xs disabled:opacity-50"
           >
             <ShieldAlert className="w-3.5 h-3.5" />
             {loading === 'no_customer' ? 'جارٍ الإطلاق...' : 'تجربة: فتح لاكيس بدون زبون'}
@@ -53,7 +53,7 @@ export default function SimulationControls({ onTrigger }) {
           <button
             onClick={() => handleTestTrigger('discount')}
             disabled={loading !== ''}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 text-slate-200 border border-slate-700 text-xs font-semibold hover:bg-slate-700 transition-all disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-800 border border-slate-300 text-xs font-semibold hover:bg-slate-200 transition-all shadow-xs disabled:opacity-50"
           >
             <Tag className="w-3.5 h-3.5" />
             {loading === 'discount' ? 'جارٍ الإطلاق...' : 'تجربة: تخفيض استثنائي 1000 دج'}
@@ -62,7 +62,7 @@ export default function SimulationControls({ onTrigger }) {
       </div>
 
       {feedback && (
-        <div className="mt-2 text-xs font-medium text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-3 py-1.5 rounded flex items-center gap-2">
+        <div className="mt-2 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded flex items-center gap-2">
           <CheckCircle2 className="w-3.5 h-3.5" />
           {feedback}
         </div>

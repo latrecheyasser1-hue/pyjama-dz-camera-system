@@ -52,22 +52,22 @@ export default function IncidentTimeline({ onNewAlert }) {
   const getSeverityBadge = (severity, type) => {
     if (severity === 'critical') {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-950 text-rose-300 border border-rose-800">
-          <AlertTriangle className="w-3 h-3" />
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+          <AlertTriangle className="w-3 h-3 text-rose-600" />
           حرج
         </span>
       );
     }
     if (type === 'suspicious_reach') {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-950 text-amber-300 border border-amber-800">
-          <Tag className="w-3 h-3" />
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+          <Tag className="w-3 h-3 text-amber-600" />
           تدقيق مالي
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
         تنبيه
       </span>
     );
@@ -76,39 +76,39 @@ export default function IncidentTimeline({ onNewAlert }) {
   return (
     <div className="card-clean rounded-xl p-4 flex flex-col h-full space-y-4">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-800">
+      <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-rose-400 border border-slate-700">
+          <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center text-rose-600 border border-rose-200">
             <ShieldAlert className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-white">سجل التنبيهات الأمنية</h3>
-            <p className="text-[11px] text-slate-400">مزامنة سحابية لحظية</p>
+            <h3 className="text-sm font-bold text-slate-900">سجل التنبيهات الأمنية</h3>
+            <p className="text-[11px] text-slate-500">مزامنة سحابية لحظية</p>
           </div>
         </div>
 
         {/* Filter Pills */}
-        <div className="flex items-center gap-1 bg-[#090d16] p-1 rounded-lg border border-slate-800 text-xs">
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200 text-xs">
           <button
             onClick={() => setFilter('all')}
-            className={`px-2 py-0.5 rounded text-xs transition-all ${
-              filter === 'all' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
+            className={`px-2.5 py-0.5 rounded text-xs transition-all ${
+              filter === 'all' ? 'bg-white text-slate-900 font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             الكل ({events.length})
           </button>
           <button
             onClick={() => setFilter('critical')}
-            className={`px-2 py-0.5 rounded text-xs transition-all ${
-              filter === 'critical' ? 'bg-rose-900 text-rose-200 font-bold' : 'text-slate-400 hover:text-white'
+            className={`px-2.5 py-0.5 rounded text-xs transition-all ${
+              filter === 'critical' ? 'bg-rose-600 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             حرجة
           </button>
           <button
             onClick={() => setFilter('discount')}
-            className={`px-2 py-0.5 rounded text-xs transition-all ${
-              filter === 'discount' ? 'bg-slate-700 text-slate-200 font-bold' : 'text-slate-400 hover:text-white'
+            className={`px-2.5 py-0.5 rounded text-xs transition-all ${
+              filter === 'discount' ? 'bg-white text-slate-900 font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             تخفيضات
@@ -136,15 +136,15 @@ export default function IncidentTimeline({ onNewAlert }) {
             return (
               <div
                 key={item.id}
-                className="bg-[#090d16] rounded-lg p-3 border border-slate-800 hover:border-slate-700 transition-all flex flex-col gap-2"
+                className="bg-slate-50/70 rounded-lg p-3 border border-slate-200 hover:border-slate-300 transition-all flex flex-col gap-2"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono text-slate-400" dir="ltr">{timeFormatted}</span>
+                      <span className="text-xs font-mono text-slate-500" dir="ltr">{timeFormatted}</span>
                       {getSeverityBadge(item.severity, item.event_type)}
                     </div>
-                    <h4 className="text-xs font-bold text-slate-100">{item.title}</h4>
+                    <h4 className="text-xs font-bold text-slate-900">{item.title}</h4>
                   </div>
 
                   <button
@@ -154,14 +154,14 @@ export default function IncidentTimeline({ onNewAlert }) {
                         : 'http://localhost:8000/clips/sample.mp4';
                       setSelectedVideo({ url: videoUrl, title: item.title, time: timeFormatted });
                     }}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-slate-800 text-slate-200 border border-slate-700 text-[11px] font-semibold hover:bg-slate-700 transition-all shrink-0"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-white text-slate-700 border border-slate-300 text-[11px] font-semibold hover:bg-slate-50 shadow-xs transition-all shrink-0"
                   >
-                    <Video className="w-3 h-3 text-amber-400" />
+                    <Video className="w-3 h-3 text-slate-600" />
                     مشاهدة المقطع
                   </button>
                 </div>
 
-                <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">{item.description}</p>
+                <p className="text-[11px] text-slate-600 line-clamp-2 leading-relaxed">{item.description}</p>
               </div>
             );
           })
@@ -170,22 +170,22 @@ export default function IncidentTimeline({ onNewAlert }) {
 
       {/* Video Replay Modal */}
       {selectedVideo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
-          <div className="card-clean w-full max-w-2xl rounded-xl p-4 border border-slate-700 shadow-xl relative">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="card-clean w-full max-w-2xl rounded-xl p-4 border border-slate-200 shadow-2xl relative">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
               <div>
-                <h4 className="text-sm font-bold text-white">{selectedVideo.title}</h4>
-                <p className="text-xs text-amber-500 font-mono" dir="ltr">{selectedVideo.time}</p>
+                <h4 className="text-sm font-bold text-slate-900">{selectedVideo.title}</h4>
+                <p className="text-xs text-slate-500 font-mono" dir="ltr">{selectedVideo.time}</p>
               </div>
               <button
                 onClick={() => setSelectedVideo(null)}
-                className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition-all"
+                className="p-1 rounded text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-all"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="aspect-video w-full rounded-lg overflow-hidden bg-black border border-slate-800">
+            <div className="aspect-video w-full rounded-lg overflow-hidden bg-black border border-slate-200">
               <video
                 src={selectedVideo.url}
                 controls

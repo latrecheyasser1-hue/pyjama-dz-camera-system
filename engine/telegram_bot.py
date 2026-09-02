@@ -54,12 +54,12 @@ class TelegramNotifier:
         duration_seconds: int = 0
     ) -> Optional[dict]:
         caption = (
-            f"🚨 <b>تنبيه أمني ذكي - Pyjama DZ</b> 🚨\n\n"
-            f"📍 <b>الموقع:</b> {location.upper()}\n"
-            f"⚠️ <b>نوع الحدث:</b> {title}\n"
-            f"⏱️ <b>المدة:</b> {duration_seconds} ثانية\n"
-            f"📝 <b>التفاصيل:</b> {details}\n\n"
-            f"📹 <i>المقطع التوثيقي مرفق أدناه (تخزين سحابي مجاني)</i>"
+            f"<b>تنبيه أمني - Pyjama DZ</b>\n\n"
+            f"<b>الموقع:</b> {location.upper()}\n"
+            f"<b>نوع الحدث:</b> {title}\n"
+            f"<b>المدة:</b> {duration_seconds} ثانية\n"
+            f"<b>التفاصيل:</b> {details}\n\n"
+            f"<i>المقطع التوثيقي مرفق أدناه</i>"
         )
 
         if not self.is_configured():
@@ -94,6 +94,6 @@ class TelegramNotifier:
             return None
 
     def send_daily_summary(self, location: str, summary_markdown: str, date_str: str) -> Optional[dict]:
-        header = f"📊 <b>تقرير منتصف الليل (00:00) - Pyjama DZ</b>\n📅 <b>التاريخ:</b> {date_str}\n📍 <b>الفرع:</b> {location.upper()}\n\n"
+        header = f"<b>تقرير منتصف الليل (00:00) - Pyjama DZ</b>\n<b>التاريخ:</b> {date_str}\n<b>الفرع:</b> {location.upper()}\n\n"
         full_text = header + summary_markdown
         return self.send_message(full_text)

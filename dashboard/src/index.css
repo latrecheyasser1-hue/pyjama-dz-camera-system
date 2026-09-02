@@ -2,8 +2,8 @@
 
 @layer base {
   body {
-    background-color: #090d16;
-    color: #f1f5f9;
+    background-color: #f8fafc;
+    color: #0f172a;
     font-family: 'Cairo', sans-serif;
     direction: rtl;
     text-align: right;
@@ -13,29 +13,29 @@
   }
 }
 
-/* Minimalist Clean Dashboard Card */
+/* Minimalist Clean White Card */
 .card-clean {
-  background-color: #101623;
-  border: 1px solid #1e293b;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .card-clean:hover {
-  border-color: #334155;
+  border-color: #cbd5e1;
 }
 
-/* Clean Custom Scrollbar */
+/* Clean Custom Scrollbar for Light Theme */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #090d16;
+  background: #f1f5f9;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: #cbd5e1;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #94a3b8;
 }

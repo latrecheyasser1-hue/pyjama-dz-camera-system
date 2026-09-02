@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Eye, EyeOff, Radio, Grid, Layout, Sliders, RefreshCw, Store, Package, Scissors, ShieldAlert, UserCheck, UserX } from 'lucide-react';
+import { Camera, Eye, EyeOff, Radio, Grid, Layout, Sliders, RefreshCw, Store, Package, Scissors } from 'lucide-react';
 
 export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZoneEditor }) {
   const [showAI, setShowAI] = useState(true);
@@ -70,22 +70,22 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
   return (
     <div className="card-clean rounded-xl p-4 space-y-4">
       {/* Top Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center text-amber-500 border border-slate-700">
+          <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700 border border-slate-200">
             <Camera className="w-4 h-4" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold text-white">
+              <h2 className="text-sm font-bold text-slate-900">
                 {currentLocation.name}
               </h2>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-950 text-emerald-400 border border-emerald-800">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                 Dahua DVR (متصل)
               </span>
             </div>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500">
               {viewMode === 'single'
                 ? currentLocation.channels.find((c) => c.id === activeChannel)?.name
                 : 'عرض شبكة الكاميرات المجمعة'}
@@ -95,7 +95,7 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
 
         {/* Location Selector Tabs */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 bg-[#090d16] p-1 rounded-lg border border-slate-800">
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
             {Object.entries(locations).map(([id, loc]) => {
               const Icon = loc.icon;
               return (
@@ -108,8 +108,8 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
                   }}
                   className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold transition-all ${
                     activeCamera === id
-                      ? 'bg-amber-500 text-slate-950 font-bold'
-                      : 'text-slate-400 hover:text-white'
+                      ? 'bg-white text-slate-900 shadow-xs font-bold'
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   <Icon className="w-3.5 h-3.5" />
@@ -122,12 +122,12 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
           </div>
 
           {/* View Mode Toggle */}
-          <div className="flex items-center gap-1 bg-[#090d16] p-1 rounded-lg border border-slate-800">
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
             <button
               onClick={() => setViewMode('single')}
               title="عرض كاميرا رئيسية"
               className={`p-1.5 rounded text-xs transition-all ${
-                viewMode === 'single' ? 'bg-slate-800 text-amber-400' : 'text-slate-400 hover:text-white'
+                viewMode === 'single' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               <Layout className="w-3.5 h-3.5" />
@@ -136,7 +136,7 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
               onClick={() => setViewMode('grid')}
               title="عرض شبكة الكاميرات"
               className={`p-1.5 rounded text-xs transition-all ${
-                viewMode === 'grid' ? 'bg-slate-800 text-amber-400' : 'text-slate-400 hover:text-white'
+                viewMode === 'grid' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               <Grid className="w-3.5 h-3.5" />
@@ -146,8 +146,8 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
       </div>
 
       {/* Internal Channel Selector Bar */}
-      <div className="flex flex-wrap items-center gap-1.5 bg-[#090d16] p-1.5 rounded-lg border border-slate-800">
-        <span className="text-xs font-semibold text-slate-400 px-2">الكاميرات:</span>
+      <div className="flex flex-wrap items-center gap-1.5 bg-slate-50 p-1.5 rounded-lg border border-slate-200">
+        <span className="text-xs font-semibold text-slate-500 px-2">الكاميرات:</span>
         {currentLocation.channels.map((ch) => (
           <button
             key={ch.id}
@@ -158,11 +158,11 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
             }}
             className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs transition-all ${
               viewMode === 'single' && activeChannel === ch.id
-                ? 'bg-slate-800 text-white font-bold border border-slate-600'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-white text-slate-900 font-bold border border-slate-300 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <span className={`w-1.5 h-1.5 rounded-full ${activeChannel === ch.id ? 'bg-amber-400' : 'bg-slate-600'}`}></span>
+            <span className={`w-1.5 h-1.5 rounded-full ${activeChannel === ch.id ? 'bg-slate-900' : 'bg-slate-300'}`}></span>
             {ch.name}
           </button>
         ))}
@@ -170,7 +170,7 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
 
       {/* Video Viewport */}
       {viewMode === 'single' ? (
-        <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-black border border-slate-800">
+        <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-slate-950 border border-slate-200 shadow-inner">
           {!streamError ? (
             <img
               src={streamUrl}
@@ -179,15 +179,15 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
               onError={() => setStreamError(true)}
             />
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center gap-2 p-6 text-center bg-slate-900">
-              <Radio className="w-8 h-8 text-amber-500" />
-              <h3 className="text-sm font-bold text-slate-200">في انتظار تشغيل البث...</h3>
+            <div className="w-full h-full flex flex-col items-center justify-center gap-2 p-6 text-center bg-slate-100">
+              <Radio className="w-8 h-8 text-slate-400" />
+              <h3 className="text-sm font-bold text-slate-700">في انتظار تشغيل البث...</h3>
               <button
                 onClick={() => {
                   setStreamError(false);
                   setStreamKey(Date.now());
                 }}
-                className="mt-1 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-800 text-slate-200 border border-slate-700 text-xs font-semibold hover:bg-slate-700 transition-all"
+                className="mt-1 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white text-slate-700 border border-slate-300 text-xs font-semibold hover:bg-slate-50 shadow-xs"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 إعادة المحاولة
@@ -201,21 +201,17 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
               {activeChannel === 1 && activeCamera === 'cam_hanout_caisse' && (
                 <>
                   <div
-                    className={`px-2.5 py-1 rounded text-xs font-bold border ${
+                    className={`px-2.5 py-1 rounded text-xs font-bold border shadow-xs ${
                       streamState.drawer_open
-                        ? 'bg-rose-950 text-rose-300 border-rose-800'
-                        : 'bg-slate-900/90 text-slate-300 border-slate-700'
+                        ? 'bg-rose-600 text-white border-rose-700'
+                        : 'bg-white/95 text-slate-800 border-slate-200'
                     }`}
                   >
                     {streamState.drawer_open ? 'لاكيس: مفتوحة' : 'لاكيس: مغلقة'}
                   </div>
 
                   <div
-                    className={`px-2.5 py-1 rounded text-xs font-bold border ${
-                      streamState.customer_present
-                        ? 'bg-slate-900/90 text-cyan-300 border-slate-700'
-                        : 'bg-slate-900/90 text-slate-400 border-slate-700'
-                    }`}
+                    className={`px-2.5 py-1 rounded text-xs font-bold border shadow-xs bg-white/95 text-slate-800 border-slate-200`}
                   >
                     {streamState.customer_present ? 'زبون: متواجد' : 'زبون: لا يوجد'}
                   </div>
@@ -223,16 +219,16 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
               )}
             </div>
 
-            <div className="bg-slate-900/90 px-2.5 py-1 rounded border border-slate-700 text-xs text-amber-400 font-mono font-bold" dir="ltr">
+            <div className="bg-white/95 px-2.5 py-1 rounded border border-slate-200 text-xs text-slate-800 font-mono font-bold shadow-xs" dir="ltr">
               DAHUA CH-{activeChannel}
             </div>
           </div>
 
           {/* Bottom Floating Bar */}
-          <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between bg-slate-950/90 px-3 py-1.5 rounded-md border border-slate-800 text-xs">
-            <div className="flex items-center gap-2 text-slate-300">
-              <span className="text-slate-400">الذكاء الاصطناعي:</span>
-              <span className="text-amber-400 font-mono" dir="ltr">YOLOv8 Active (CH-{activeChannel})</span>
+          <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between bg-white/95 px-3 py-1.5 rounded-md border border-slate-200 text-xs shadow-md">
+            <div className="flex items-center gap-2 text-slate-700">
+              <span className="text-slate-500 font-medium">الذكاء الاصطناعي:</span>
+              <span className="text-slate-900 font-mono font-bold" dir="ltr">YOLOv8 Active (CH-{activeChannel})</span>
             </div>
 
             <div className="flex items-center gap-2">
@@ -240,8 +236,8 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
                 onClick={() => setShowAI(!showAI)}
                 className={`flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold border transition-all ${
                   showAI
-                    ? 'bg-slate-800 text-slate-200 border-slate-700'
-                    : 'bg-slate-900 text-slate-400 border-slate-800'
+                    ? 'bg-slate-100 text-slate-800 border-slate-300'
+                    : 'bg-white text-slate-600 border-slate-200'
                 }`}
               >
                 {showAI ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
@@ -251,7 +247,7 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
               {onOpenZoneEditor && (
                 <button
                   onClick={onOpenZoneEditor}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold bg-amber-500 text-slate-950 hover:bg-amber-400 transition-all"
+                  className="flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-xs"
                 >
                   <Sliders className="w-3 h-3" />
                   رسم وتحديد الـ Zones
@@ -270,17 +266,17 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
                 setActiveChannel(ch.id);
                 setViewMode('single');
               }}
-              className="relative aspect-video rounded-lg overflow-hidden bg-black border border-slate-800 hover:border-slate-600 cursor-pointer transition-all"
+              className="relative aspect-video rounded-lg overflow-hidden bg-slate-950 border border-slate-200 hover:border-slate-400 cursor-pointer transition-all shadow-xs"
             >
               <img
                 src={`http://localhost:8000/stream/${activeCamera}?ai=${showAI}&channel=${ch.id}&t=${streamKey}`}
                 alt={ch.name}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute top-2 right-2 bg-slate-900/90 px-2 py-0.5 rounded text-[11px] font-semibold text-white border border-slate-700">
+              <div className="absolute top-2 right-2 bg-white/95 px-2 py-0.5 rounded text-[11px] font-semibold text-slate-800 border border-slate-200 shadow-xs">
                 {ch.name}
               </div>
-              <div className="absolute bottom-2 left-2 bg-slate-900/90 text-slate-300 px-2 py-0.5 rounded text-[10px] font-mono border border-slate-700" dir="ltr">
+              <div className="absolute bottom-2 left-2 bg-white/95 text-slate-800 px-2 py-0.5 rounded text-[10px] font-mono border border-slate-200 shadow-xs" dir="ltr">
                 CH-{ch.id}
               </div>
             </div>

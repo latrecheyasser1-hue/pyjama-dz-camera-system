@@ -48,7 +48,7 @@ class CaisseDetector:
             self.drawer_was_open = True
             self.drawer_open_start_time = current_time
             self.unattended_alert_triggered = False
-            print(f"[CaisseDetector] 🔔 Cash Drawer Opened! (Customer: {customer_present}, Cashier: {cashier_present})")
+            print(f"[CaisseDetector] Cash Drawer Opened (Customer: {customer_present}, Cashier: {cashier_present})")
 
             # Check Rule 1: Drawer opened with NO CUSTOMER present
             if not customer_present and (current_time - self.last_event_time > self.cooldown_seconds):
@@ -72,7 +72,7 @@ class CaisseDetector:
             self.drawer_was_open = False
             self.drawer_open_start_time = None
             self.unattended_alert_triggered = False
-            print(f"[CaisseDetector] 🔒 Cash Drawer Closed. (Was open for {open_duration}s)")
+            print(f"[CaisseDetector] Cash Drawer Closed (Was open for {open_duration}s)")
 
     def handle_pos_discount_event(self, original_price: float, paid_price: float, discount_amount: float, ticket_id: str):
         """
@@ -84,7 +84,7 @@ class CaisseDetector:
             title = f"تخفيض استثنائي كبير ({int(discount_amount)} دج / {int(discount_percent)}%)"
             details = f"رقم التذكرة: #{ticket_id} | المبلغ الأصلي: {int(original_price)} دج | المدفوع: {int(paid_price)} دج | التخفيض: {int(discount_amount)} دج"
 
-            print(f"[CaisseDetector] ⚠️ ABNORMAL DISCOUNT DETECTED: {title}")
+            print(f"[CaisseDetector] ABNORMAL DISCOUNT DETECTED: {title}")
             self._record_and_dispatch_event(
                 event_type="suspicious_reach",
                 title=title,
@@ -98,7 +98,7 @@ class CaisseDetector:
         self.last_event_time = event_time
         title = "فتح درج النقود بدون وجود زبون (No Customer)"
         details = "تم فتح درج النقود (La Caisse) في غياب أي زبون أمام الكونتوار. حركة مشبوهة تتطلب المراجعة."
-        print(f"[CaisseDetector] 🚨 TRIGGERED: {title}")
+        print(f"[CaisseDetector] TRIGGERED: {title}")
 
         self._record_and_dispatch_event(
             event_type="caisse_unattended",
@@ -113,7 +113,7 @@ class CaisseDetector:
         self.last_event_time = event_time
         title = f"ترك لاكيس مفتوحة وبدون حراسة ({elapsed_seconds} ثانية)"
         details = f"درج النقود ترك مفتوحاً لأكثر من {elapsed_seconds} ثانية دون وجود المسؤول عند الكونتوار."
-        print(f"[CaisseDetector] 🚨 TRIGGERED: {title}")
+        print(f"[CaisseDetector] TRIGGERED: {title}")
 
         self._record_and_dispatch_event(
             event_type="caisse_unattended",

@@ -55,7 +55,7 @@ def get_status():
         }
     return status_data
 
-def generate_mjpeg(camera_id: str, show_ai: bool = True):
+def generate_mjpeg(camera_id: str, show_ai: bool = True, channel: int = 1):
     """Generator for MJPEG live camera streaming to browser."""
     stream = STREAMS.get(camera_id)
     if not stream:
@@ -70,7 +70,17 @@ def generate_mjpeg(camera_id: str, show_ai: bool = True):
         annotated = frame.copy()
         h, w = annotated.shape[:2]
 
-        if show_ai and camera_id == "cam_hanout_caisse":
+        # Draw Channel Title Banner
+        ch_names = {
+            1: "CH-01: CAISSE & COMPTOIR",
+            2: "CH-02: ENTREE PRINCIPALE",
+            3: "CH-03: RAYONS & PYJAMAS",
+            4: "CH-04: CABINES & STOCK"
+        }
+        ch_label = ch_names.get(channel, f"CH-{channel:02d}")
+        cv2.putText(annotated, ch_label, (20, h - 25), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 255, 255), 2)
+
+        if show_ai and camera_id == "cam_hanout_caisse" and channel == 1:
             # Draw AI Zone Overlay (Zone de Caisse in Red, Zone Attente in Blue)
             # 1. Zone Caisse
             cv2.rectangle(annotated, (int(w * 0.35), int(h * 0.45)), (int(w * 0.65), int(h * 0.85)), (0, 0, 255), 2)
@@ -92,12 +102,12 @@ def generate_mjpeg(camera_id: str, show_ai: bool = True):
         time.sleep(1.0 / 15.0)
 
 @app.get("/stream/{camera_id}")
-def video_feed(camera_id: str, ai: bool = True):
-    """MJPEG Live video feed for web browser."""
+def video_feed(camera_id: str, ai: bool = True, channel: int = 1):
+    """MJPEG Live video feed for web browser with multi-channel support."""
     if camera_id not in STREAMS:
         return Response(status_code=404, content=f"Camera {camera_id} not found")
     return StreamingResponse(
-        generate_mjpeg(camera_id, show_ai=ai),
+        generate_mjpeg(camera_id, show_ai=ai, channel=channel),
         media_type="multipart/x-mixed-replace; boundary=frame"
     )
 

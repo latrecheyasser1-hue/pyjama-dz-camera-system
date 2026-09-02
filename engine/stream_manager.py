@@ -34,6 +34,13 @@ class StreamManager:
             "customer_x": 0.18,
             "customer_y": 0.65,
             "drawer_timer": 0,
+            "channels": {
+                1: "Caisse & Comptoir",
+                2: "Entrée Principale",
+                3: "Rayons & Pyjamas",
+                4: "Cabines & Stock"
+            },
+            "active_channel": 1,
             "sim_scenario": "normal" # "normal", "theft_no_customer", "unattended_drawer", "large_discount"
         }
 

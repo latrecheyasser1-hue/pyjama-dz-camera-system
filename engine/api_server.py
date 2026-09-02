@@ -130,7 +130,14 @@ def get_clip(filename: str):
     file_path = CLIPS_DIR / filename
     if not file_path.exists():
         return Response(status_code=404, content="Clip not found")
-    return FileResponse(file_path, media_type="video/mp4")
+    return FileResponse(
+        file_path,
+        media_type="video/mp4",
+        headers={
+            "Accept-Ranges": "bytes",
+            "Cache-Control": "no-cache"
+        }
+    )
 
 @app.post("/test/trigger-discount")
 def test_discount():

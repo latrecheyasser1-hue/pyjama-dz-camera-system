@@ -1,6 +1,6 @@
 """
 Pyjama DZ Camera System
-Video Clipper Module (MP4 Generator with Overlays)
+Video Clipper Module (H.264 MP4 Generator for Web & Telegram)
 """
 import os
 import cv2
@@ -11,10 +11,17 @@ from datetime import datetime
 from typing import List, Optional
 from engine.config import CLIPS_DIR
 
+try:
+    import imageio
+    IMAGEIO_AVAILABLE = True
+except ImportError:
+    IMAGEIO_AVAILABLE = False
+
+
 class VideoClipper:
     """
-    Creates lightweight MP4 video clips from frame buffers
-    with professional security overlays (Watermark, Timecode, Alert Tag).
+    Creates lightweight H.264 MP4 video clips from frame buffers
+    compatible with HTML5 web browsers and Telegram.
     """
     @staticmethod
     def create_clip(
@@ -34,47 +41,62 @@ class VideoClipper:
             output_filename = f"{location}_{event_type}_{timestamp_str}.mp4"
 
         output_path = CLIPS_DIR / output_filename
-
-        # Get frame dimensions
         first_frame = frames_data[0]["frame"]
         height, width = first_frame.shape[:2]
 
-        # Use MP4V or H264 codec
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        out = cv2.VideoWriter(str(output_path), fourcc, fps, (width, height))
-
-        if not out.isOpened():
-            # Fallback codec
-            fourcc = cv2.VideoWriter_fourcc(*'XVID')
-            out = cv2.VideoWriter(str(output_path), fourcc, fps, (width, height))
+        processed_rgb_frames = []
 
         for item in frames_data:
             frame = item["frame"].copy()
             frame_ts = item["timestamp"]
             ts_str = datetime.fromtimestamp(frame_ts).strftime("%Y-%m-%d %H:%M:%S")
 
-            # Draw top alert banner
-            # Semi-transparent red/amber banner at the top
+            # Draw top security alert banner
             overlay = frame.copy()
-            cv2.rectangle(overlay, (0, 0), (width, 50), (20, 20, 30), -1)
-            cv2.rectangle(overlay, (0, 0), (12, 50), (0, 0, 255), -1) # Red indicator bar
-            cv2.addWeighted(overlay, 0.75, frame, 0.25, 0, frame)
+            cv2.rectangle(overlay, (0, 0), (width, 45), (15, 23, 42), -1)
+            cv2.rectangle(overlay, (0, 0), (8, 45), (0, 0, 230), -1)
+            cv2.addWeighted(overlay, 0.85, frame, 0.15, 0, frame)
 
-            # Draw text banner
-            # Pyjama DZ Brand Badge
-            cv2.putText(frame, "PYJAMA DZ AI GUARD", (25, 22),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 215, 0), 2, cv2.LINE_AA)
-            
+            # Draw clean brand badge
+            cv2.putText(frame, "PYJAMA DZ AI GUARD", (20, 20),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 215, 0), 2, cv2.LINE_AA)
+
             # Event Title
-            cv2.putText(frame, f"ALERT: {title[:40]}", (25, 42),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 255), 1, cv2.LINE_AA)
+            cv2.putText(frame, f"ALERT: {title[:45]}", (20, 38),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.42, (240, 240, 240), 1, cv2.LINE_AA)
 
-            # Timestamp on top right
-            cv2.putText(frame, ts_str, (width - 200, 30),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
+            # Timestamp on right
+            cv2.putText(frame, ts_str, (width - 190, 28),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.45, (255, 255, 255), 1, cv2.LINE_AA)
 
-            out.write(frame)
+            # Convert BGR to RGB for standard H.264 video encoding
+            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            processed_rgb_frames.append(rgb_frame)
 
+        # Write standard H.264 video with imageio-ffmpeg for 100% browser compatibility
+        if IMAGEIO_AVAILABLE:
+            try:
+                writer = imageio.get_writer(
+                    str(output_path),
+                    fps=fps,
+                    codec='libx264',
+                    quality=8,
+                    pixelformat='yuv420p',
+                    macro_block_size=None
+                )
+                for f in processed_rgb_frames:
+                    writer.append_data(f)
+                writer.close()
+                print(f"[VideoClipper] Saved browser-compatible H.264 clip: {output_path} ({len(processed_rgb_frames)} frames)")
+                return str(output_path)
+            except Exception as e:
+                print(f"[VideoClipper] imageio encoding error: {e}. Falling back to OpenCV writer.")
+
+        # Fallback OpenCV writer
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        out = cv2.VideoWriter(str(output_path), fourcc, fps, (width, height))
+        for item in frames_data:
+            out.write(item["frame"])
         out.release()
-        print(f"[VideoClipper] Successfully saved security clip: {output_path} ({len(frames_data)} frames)")
+        print(f"[VideoClipper] Saved fallback clip: {output_path}")
         return str(output_path)

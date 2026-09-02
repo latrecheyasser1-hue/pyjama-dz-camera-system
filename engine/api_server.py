@@ -159,3 +159,54 @@ def test_no_customer():
         DETECTOR._trigger_no_customer_drawer_alert(time.time())
         return {"ok": True, "message": "Triggered no-customer drawer opening alert"}
     return {"ok": False, "message": "Detector not initialized"}
+
+# ==================== Worker Face Enrollment APIs ====================
+from fastapi import Form, UploadFile, File
+from engine.face_recognizer import FaceRecognizer, FACES_DIR
+
+face_recognizer = FaceRecognizer()
+
+@app.get("/api/workers")
+def get_workers_list():
+    """Return all registered workers."""
+    return face_recognizer.get_all_workers()
+
+@app.post("/api/workers/enroll")
+async def enroll_worker(
+    full_name: str = Form(...),
+    role: str = Form(...),
+    location: str = Form(...),
+    workstation: str = Form(...),
+    shift_start: str = Form("08:00"),
+    shift_end: str = Form("17:00"),
+    photo: Optional[UploadFile] = File(None)
+):
+    """Register a new worker with their face photo."""
+    photo_bytes = None
+    if photo:
+        photo_bytes = await photo.read()
+
+    worker = face_recognizer.enroll_worker(
+        full_name=full_name,
+        role=role,
+        location=location,
+        workstation=workstation,
+        shift_start=shift_start,
+        shift_end=shift_end,
+        photo_bytes=photo_bytes
+    )
+    return {"ok": True, "worker": worker}
+
+@app.delete("/api/workers/{worker_id}")
+def delete_worker(worker_id: str):
+    """Delete an enrolled worker."""
+    success = face_recognizer.delete_worker(worker_id)
+    return {"ok": success}
+
+@app.get("/api/workers/photos/{filename}")
+def get_worker_photo(filename: str):
+    """Serve worker face photo."""
+    file_path = FACES_DIR / filename
+    if not file_path.exists():
+        return Response(status_code=404, content="Photo not found")
+    return FileResponse(file_path, media_type="image/jpeg")

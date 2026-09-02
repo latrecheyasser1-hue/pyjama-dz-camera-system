@@ -9,8 +9,7 @@ export default function CaisseMetrics({ metrics }) {
       subtext: 'مقارنة بـ 0 البارحة',
       icon: ShieldAlert,
       color: 'text-rose-400',
-      border: 'border-rose-500/30',
-      bg: 'bg-rose-500/10'
+      border: 'border-slate-800'
     },
     {
       title: 'تخفيضات تم تدقيقها',
@@ -18,8 +17,7 @@ export default function CaisseMetrics({ metrics }) {
       subtext: 'عملية واحدة استثنائية',
       icon: Tag,
       color: 'text-amber-400',
-      border: 'border-amber-500/30',
-      bg: 'bg-amber-500/10'
+      border: 'border-slate-800'
     },
     {
       title: 'تدفق الزبائن عند لاكيس',
@@ -27,8 +25,7 @@ export default function CaisseMetrics({ metrics }) {
       subtext: 'ذروة الزبائن: 17:00 - 19:00',
       icon: Users,
       color: 'text-cyan-400',
-      border: 'border-cyan-500/30',
-      bg: 'bg-cyan-500/10'
+      border: 'border-slate-800'
     },
     {
       title: 'متوسط وقت فتح لاكيس',
@@ -36,8 +33,7 @@ export default function CaisseMetrics({ metrics }) {
       subtext: 'في الحدود الآمنة الطبيعية',
       icon: Clock,
       color: 'text-emerald-400',
-      border: 'border-emerald-500/30',
-      bg: 'bg-emerald-500/10'
+      border: 'border-slate-800'
     }
   ];
 
@@ -48,18 +44,18 @@ export default function CaisseMetrics({ metrics }) {
         return (
           <div
             key={i}
-            className={`glass-panel rounded-2xl p-4 border ${c.border} flex flex-col justify-between transition-all hover:scale-[1.02]`}
+            className="card-clean rounded-xl p-4 flex flex-col justify-between"
           >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-semibold text-gray-400">{c.title}</span>
-              <div className={`w-8 h-8 rounded-xl ${c.bg} flex items-center justify-center ${c.color}`}>
-                <Icon className="w-4 h-4" />
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-slate-400">{c.title}</span>
+              <div className="w-7 h-7 rounded-md bg-slate-800 flex items-center justify-center text-slate-300 border border-slate-700">
+                <Icon className="w-3.5 h-3.5" />
               </div>
             </div>
             <div>
-              <div className={`text-2xl font-black ${c.color} font-mono tracking-tight`}>{c.value}</div>
-              <div className="text-[11px] text-gray-400 mt-1 flex items-center gap-1">
-                <TrendingUp className="w-3 h-3 text-gray-500" />
+              <div className={`text-xl font-bold ${c.color} font-mono`} dir="ltr">{c.value}</div>
+              <div className="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
+                <TrendingUp className="w-3 h-3 text-slate-400" />
                 {c.subtext}
               </div>
             </div>

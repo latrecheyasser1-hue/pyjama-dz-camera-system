@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Check, RotateCcw, Shield, Trash2 } from 'lucide-react';
+import { X, Check, RotateCcw, Shield, Sliders } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 export default function ZoneEditor({ isOpen, onClose, activeCamera = 'cam_hanout_caisse' }) {
@@ -16,7 +16,6 @@ export default function ZoneEditor({ isOpen, onClose, activeCamera = 'cam_hanout
   const [successMsg, setSuccessMsg] = useState(false);
   const canvasRef = useRef(null);
 
-  // Handle canvas click to place points
   const handleCanvasClick = (e) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -31,7 +30,6 @@ export default function ZoneEditor({ isOpen, onClose, activeCamera = 'cam_hanout
     }
   };
 
-  // Draw overlay polygon
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -49,21 +47,20 @@ export default function ZoneEditor({ isOpen, onClose, activeCamera = 'cam_hanout
       }
       if (points.length === 4) {
         ctx.closePath();
-        ctx.fillStyle = zoneType === 'caisse' ? 'rgba(239, 68, 68, 0.25)' : 'rgba(59, 130, 246, 0.25)';
+        ctx.fillStyle = zoneType === 'caisse' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(59, 130, 246, 0.2)';
         ctx.fill();
       }
       ctx.strokeStyle = zoneType === 'caisse' ? '#ef4444' : '#3b82f6';
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 2.5;
       ctx.stroke();
 
-      // Draw corner point handles
-      points.forEach((pt, index) => {
+      points.forEach((pt) => {
         ctx.beginPath();
-        ctx.arc(pt.x * width, pt.y * height, 6, 0, Math.PI * 2);
+        ctx.arc(pt.x * width, pt.y * height, 5, 0, Math.PI * 2);
         ctx.fillStyle = '#ffffff';
         ctx.fill();
         ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 1.5;
         ctx.stroke();
       });
     }
@@ -101,33 +98,30 @@ export default function ZoneEditor({ isOpen, onClose, activeCamera = 'cam_hanout
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-      <div className="glass-panel w-full max-w-4xl rounded-2xl p-6 border border-white/10 shadow-2xl relative">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-              <Shield className="w-5 h-5" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
+      <div className="card-clean w-full max-w-4xl rounded-xl p-5 border border-slate-700 shadow-2xl relative">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-amber-500 border border-slate-700">
+              <Shield className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white">رسم وتحديد منطقة الحراسة (Zone ROI)</h3>
-              <p className="text-xs text-gray-400">
-                انقر على الكادر بالماوس لتحديد الزوايا الأربعة لمنطقة المراقبة
+              <h3 className="text-sm font-bold text-white">رسم وتحديد منطقة الحراسة (Zone ROI)</h3>
+              <p className="text-[11px] text-slate-400">
+                انقر بالماوس لتحديد النقاط الأربعة لمنطقة المراقبة
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+            className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition-all"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Editor Grid: Canvas on Left, Controls on Right */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Canvas Area */}
-          <div className="lg:col-span-2 relative aspect-video bg-gray-950 rounded-xl overflow-hidden border border-white/10 cursor-crosshair">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <div className="lg:col-span-2 relative aspect-video bg-black rounded-lg overflow-hidden border border-slate-800 cursor-crosshair">
             <img
               src={`http://localhost:8000/stream/${activeCamera}?ai=false`}
               alt="Snapshot"
@@ -140,73 +134,72 @@ export default function ZoneEditor({ isOpen, onClose, activeCamera = 'cam_hanout
               onClick={handleCanvasClick}
               className="absolute inset-0 w-full h-full"
             />
-            <div className="absolute bottom-2 right-2 bg-black/70 backdrop-blur px-2.5 py-1 rounded text-[11px] text-amber-300">
+            <div className="absolute bottom-2 right-2 bg-slate-900/90 px-2 py-0.5 rounded text-[11px] text-slate-300 border border-slate-700">
               {points.length}/4 نقاط محددة
             </div>
           </div>
 
-          {/* Form Settings */}
-          <div className="space-y-4">
+          <div className="space-y-3.5">
             <div>
-              <label className="block text-xs font-semibold text-gray-300 mb-1">اسم المنطقة:</label>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">اسم المنطقة:</label>
               <input
                 type="text"
                 value={zoneName}
                 onChange={(e) => setZoneName(e.target.value)}
-                className="w-full bg-gray-900 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-500 focus:outline-none"
+                className="w-full bg-[#090d16] border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:border-slate-600 focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-300 mb-1">نوع المنطقة:</label>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">نوع المنطقة:</label>
               <select
                 value={zoneType}
                 onChange={(e) => setZoneType(e.target.value)}
-                className="w-full bg-gray-900 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-500 focus:outline-none"
+                className="w-full bg-[#090d16] border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:border-slate-600 focus:outline-none"
               >
-                <option value="caisse">🔴 منطقة لاكيس ودرج النقود</option>
-                <option value="queue">🔵 منطقة طابور وانتظار الزبائن</option>
-                <option value="packing">🟢 طاولة التغليف والتحضير</option>
-                <option value="workstation">🟣 منصب ماكينة الخياطة</option>
-                <option value="loitering_area">🟡 منطقة كشف تجمعات العمال</option>
+                <option value="caisse">منطقة لاكيس ودرج النقود</option>
+                <option value="queue">منطقة طابور وانتظار الزبائن</option>
+                <option value="packing">طاولة التغليف والتحضير</option>
+                <option value="workstation">منصب ماكينة الخياطة</option>
+                <option value="loitering_area">منطقة كشف تجمعات العمال</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-300 mb-1">
                 مدة الإنذار (بالثواني):
               </label>
               <input
                 type="number"
                 value={thresholdSeconds}
                 onChange={(e) => setThresholdSeconds(e.target.value)}
-                className="w-full bg-gray-900 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-500 focus:outline-none"
+                className="w-full bg-[#090d16] border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:border-slate-600 focus:outline-none"
               />
-              <span className="text-[11px] text-gray-400">
-                (يتم إطلاق تنبيه فوري إذا تركت لاكيس مفتوحة أكثر من {thresholdSeconds} ثانية)
+              <span className="text-[10px] text-slate-400">
+                (يتم إطلاق تنبيه إذا تركت لاكيس مفتوحة أكثر من {thresholdSeconds} ثانية)
               </span>
             </div>
 
-            <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-2">
+            <div className="pt-2 border-t border-slate-800 flex items-center justify-between gap-2">
               <button
                 onClick={() => setPoints([])}
-                className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold bg-gray-800 text-gray-300 hover:bg-gray-700 transition-all"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
+                <RotateCcw className="w-3 h-3" />
                 إعادة ضبط
               </button>
 
               <button
                 onClick={handleSave}
                 disabled={saving || points.length < 4}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   successMsg
-                    ? 'bg-emerald-500 text-white'
-                    : 'bg-amber-500 text-gray-950 hover:bg-amber-400 disabled:opacity-50'
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-amber-500 text-slate-950 hover:bg-amber-400 disabled:opacity-50'
                 }`}
               >
-                <Check className="w-4 h-4" />
-                {saving ? 'جارٍ الحفظ...' : successMsg ? 'تم الحفظ بنجاح!' : 'حفظ المنطقة'}
+                <Check className="w-3.5 h-3.5" />
+                {saving ? 'جارٍ الحفظ...' : successMsg ? 'تم الحفظ بنجاح' : 'حفظ المنطقة'}
               </button>
             </div>
           </div>

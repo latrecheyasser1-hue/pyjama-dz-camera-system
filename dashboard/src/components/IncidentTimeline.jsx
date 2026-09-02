@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldAlert, Play, Clock, AlertTriangle, CheckCircle2, Tag, FileText, X } from 'lucide-react';
+import { ShieldAlert, Play, Clock, AlertTriangle, CheckCircle2, Tag, FileText, X, Video } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 export default function IncidentTimeline({ onNewAlert }) {
@@ -8,7 +8,6 @@ export default function IncidentTimeline({ onNewAlert }) {
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
 
-  // Fetch initial events
   useEffect(() => {
     async function fetchEvents() {
       setLoading(true);
@@ -26,7 +25,6 @@ export default function IncidentTimeline({ onNewAlert }) {
 
     fetchEvents();
 
-    // Subscribe to Supabase Realtime for instant alerts
     const channel = supabase
       .channel('security-alerts')
       .on(
@@ -54,78 +52,78 @@ export default function IncidentTimeline({ onNewAlert }) {
   const getSeverityBadge = (severity, type) => {
     if (severity === 'critical') {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-950 text-rose-300 border border-rose-800">
           <AlertTriangle className="w-3 h-3" />
-          حرج / عاجل
+          حرج
         </span>
       );
     }
     if (type === 'suspicious_reach') {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-950 text-amber-300 border border-amber-800">
           <Tag className="w-3 h-3" />
           تدقيق مالي
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">
-        تنبيه نظام
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+        تنبيه
       </span>
     );
   };
 
   return (
-    <div className="glass-panel rounded-2xl p-5 border border-white/10 flex flex-col h-full">
-      {/* Header & Filter Tabs */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-white/10">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400">
-            <ShieldAlert className="w-5 h-5" />
+    <div className="card-clean rounded-xl p-4 flex flex-col h-full space-y-4">
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-800">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-rose-400 border border-slate-700">
+            <ShieldAlert className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-white">سجل التنبيهات والحركات المشبوهة</h3>
-            <p className="text-xs text-gray-400">مزامنة لحظية مباشرة عبر Supabase</p>
+            <h3 className="text-sm font-bold text-white">سجل التنبيهات الأمنية</h3>
+            <p className="text-[11px] text-slate-400">مزامنة سحابية لحظية</p>
           </div>
         </div>
 
         {/* Filter Pills */}
-        <div className="flex items-center gap-1 bg-gray-900/80 p-1 rounded-xl border border-white/5 text-xs">
+        <div className="flex items-center gap-1 bg-[#090d16] p-1 rounded-lg border border-slate-800 text-xs">
           <button
             onClick={() => setFilter('all')}
-            className={`px-2.5 py-1 rounded-lg font-semibold transition-all ${
-              filter === 'all' ? 'bg-amber-500 text-gray-950' : 'text-gray-400 hover:text-white'
+            className={`px-2 py-0.5 rounded text-xs transition-all ${
+              filter === 'all' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
             }`}
           >
             الكل ({events.length})
           </button>
           <button
             onClick={() => setFilter('critical')}
-            className={`px-2.5 py-1 rounded-lg font-semibold transition-all ${
-              filter === 'critical' ? 'bg-rose-500 text-white' : 'text-gray-400 hover:text-white'
+            className={`px-2 py-0.5 rounded text-xs transition-all ${
+              filter === 'critical' ? 'bg-rose-900 text-rose-200 font-bold' : 'text-slate-400 hover:text-white'
             }`}
           >
-            حرجة 🚨
+            حرجة
           </button>
           <button
             onClick={() => setFilter('discount')}
-            className={`px-2.5 py-1 rounded-lg font-semibold transition-all ${
-              filter === 'discount' ? 'bg-amber-500 text-gray-950' : 'text-gray-400 hover:text-white'
+            className={`px-2 py-0.5 rounded text-xs transition-all ${
+              filter === 'discount' ? 'bg-slate-700 text-slate-200 font-bold' : 'text-slate-400 hover:text-white'
             }`}
           >
-            تخفيضات 🏷️
+            تخفيضات
           </button>
         </div>
       </div>
 
       {/* Events List */}
-      <div className="space-y-3 overflow-y-auto max-h-[520px] pr-1">
+      <div className="space-y-2.5 overflow-y-auto max-h-[500px] pr-1">
         {loading ? (
-          <div className="py-12 text-center text-xs text-gray-400">جارٍ جلب السجل من السحابة...</div>
+          <div className="py-8 text-center text-xs text-slate-400">جارٍ جلب السجل...</div>
         ) : filteredEvents.length === 0 ? (
-          <div className="py-12 text-center text-xs text-gray-400">
-            <CheckCircle2 className="w-8 h-8 text-emerald-400/60 mx-auto mb-2" />
-            لا توجد حوادث أمنية مسجلة حتى الآن. الأوضاع مستقرة!
+          <div className="py-8 text-center text-xs text-slate-400">
+            <CheckCircle2 className="w-6 h-6 text-emerald-500 mx-auto mb-2" />
+            لا توجد تنبيهات أمنية مسجلة.
           </div>
         ) : (
           filteredEvents.map((item) => {
@@ -138,18 +136,17 @@ export default function IncidentTimeline({ onNewAlert }) {
             return (
               <div
                 key={item.id}
-                className="glass-card rounded-xl p-3.5 border border-white/5 hover:border-white/20 transition-all flex flex-col gap-2"
+                className="bg-[#090d16] rounded-lg p-3 border border-slate-800 hover:border-slate-700 transition-all flex flex-col gap-2"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono font-bold text-gray-400">{timeFormatted}</span>
+                      <span className="text-xs font-mono text-slate-400" dir="ltr">{timeFormatted}</span>
                       {getSeverityBadge(item.severity, item.event_type)}
                     </div>
-                    <h4 className="text-sm font-bold text-white">{item.title}</h4>
+                    <h4 className="text-xs font-bold text-slate-100">{item.title}</h4>
                   </div>
 
-                  {/* Video Clip Play Button */}
                   <button
                     onClick={() => {
                       const videoUrl = item.local_clip_path
@@ -157,14 +154,14 @@ export default function IncidentTimeline({ onNewAlert }) {
                         : 'http://localhost:8000/clips/sample.mp4';
                       setSelectedVideo({ url: videoUrl, title: item.title, time: timeFormatted });
                     }}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 text-amber-300 border border-amber-500/30 text-xs font-bold hover:bg-amber-500/20 transition-all shrink-0"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-slate-800 text-slate-200 border border-slate-700 text-[11px] font-semibold hover:bg-slate-700 transition-all shrink-0"
                   >
-                    <Play className="w-3.5 h-3.5 fill-current" />
-                    مشاهدة المقطع 📹
+                    <Video className="w-3 h-3 text-amber-400" />
+                    مشاهدة المقطع
                   </button>
                 </div>
 
-                <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed">{item.description}</p>
+                <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">{item.description}</p>
               </div>
             );
           })
@@ -173,22 +170,22 @@ export default function IncidentTimeline({ onNewAlert }) {
 
       {/* Video Replay Modal */}
       {selectedVideo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-          <div className="glass-panel w-full max-w-2xl rounded-2xl p-5 border border-white/10 shadow-2xl relative">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
+          <div className="card-clean w-full max-w-2xl rounded-xl p-4 border border-slate-700 shadow-xl relative">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-3">
               <div>
                 <h4 className="text-sm font-bold text-white">{selectedVideo.title}</h4>
-                <p className="text-xs text-amber-400 font-mono">{selectedVideo.time}</p>
+                <p className="text-xs text-amber-500 font-mono" dir="ltr">{selectedVideo.time}</p>
               </div>
               <button
                 onClick={() => setSelectedVideo(null)}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+                className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition-all"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="aspect-video w-full rounded-xl overflow-hidden bg-black border border-white/10">
+            <div className="aspect-video w-full rounded-lg overflow-hidden bg-black border border-slate-800">
               <video
                 src={selectedVideo.url}
                 controls

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Eye, EyeOff, Radio, Grid, Layout, Sparkles, RefreshCw } from 'lucide-react';
+import { Camera, Eye, EyeOff, Radio, Grid, Layout, Sliders, RefreshCw, Store, Package, Scissors, ShieldAlert, UserCheck, UserX } from 'lucide-react';
 
 export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZoneEditor }) {
   const [showAI, setShowAI] = useState(true);
   const [activeChannel, setActiveChannel] = useState(1);
-  const [viewMode, setViewMode] = useState('single'); // 'single' or 'grid'
+  const [viewMode, setViewMode] = useState('single');
   const [streamError, setStreamError] = useState(false);
   const [streamKey, setStreamKey] = useState(Date.now());
   const [streamState, setStreamState] = useState({
@@ -14,31 +14,33 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
     sim_scenario: 'normal'
   });
 
-  // Location configuration and its internal camera channels
   const locations = {
     cam_hanout_caisse: {
-      name: 'الحانوت (المحل الرئيسي)',
+      name: 'المحل الرئيسي (الحانوت)',
+      icon: Store,
       channels: [
-        { id: 1, name: 'كاميرا 1: لاكيس والدرج (Caisse)', purpose: 'مراقبة النقود والسرقات' },
-        { id: 2, name: 'كاميرا 2: المدخل وباب المحل (Entrée)', purpose: 'حساب تدفق الزبائن' },
-        { id: 3, name: 'كاميرا 3: رفوف السلعة والبيجامات (Rayons)', purpose: 'مراقبة السلعة والتجول' },
-        { id: 4, name: 'كاميرا 4: الممر وغرفة القياس (Cabines)', purpose: 'حماية الممرات' }
+        { id: 1, name: 'كاميرا 1: لاكيس والدرج', tag: 'Caisse' },
+        { id: 2, name: 'كاميرا 2: المدخل الرئيسي', tag: 'Entree' },
+        { id: 3, name: 'كاميرا 3: رفوف السلعة والبيجامات', tag: 'Rayons' },
+        { id: 4, name: 'كاميرا 4: الممر وغرفة القياس', tag: 'Cabines' }
       ]
     },
     cam_depot_packing: {
-      name: 'الديبو (المخزن المركزي)',
+      name: 'المخزن المركزي (الديبو)',
+      icon: Package,
       channels: [
-        { id: 1, name: 'كاميرا 1: طاولات التغليف والتحضير', purpose: 'تتبع سرعة التجهيز' },
-        { id: 2, name: 'كاميرا 2: باب شحن السلعة (Quai)', purpose: 'مراقبة خروج الطرود' },
-        { id: 3, name: 'كاميرا 3: ممرات التخزين (Allées Stock)', purpose: 'كشف تجمعات العمال' }
+        { id: 1, name: 'كاميرا 1: طاولات التغليف والتحضير', tag: 'Packing' },
+        { id: 2, name: 'كاميرا 2: باب شحن السلعة', tag: 'Quai' },
+        { id: 3, name: 'كاميرا 3: ممرات التخزين', tag: 'Stock' }
       ]
     },
     cam_atelier_machines: {
-      name: 'الورشة (الفصالة والخياطة)',
+      name: 'ورشة الفصالة والخياطة (الورشة)',
+      icon: Scissors,
       channels: [
-        { id: 1, name: 'كاميرا 1: صف ماكينات الخياطة 1-4', purpose: 'مراقبة ساعات العمل' },
-        { id: 2, name: 'كاميرا 2: طاولات الفصالة والقص', purpose: 'مراقبة الإنتاجية' },
-        { id: 3, name: 'كاميرا 3: طاولة الكي والتشطيب', purpose: 'مراقبة الجودة' }
+        { id: 1, name: 'كاميرا 1: صف ماكينات الخياطة', tag: 'Machines' },
+        { id: 2, name: 'كاميرا 2: طاولات الفصالة والقص', tag: 'Coupe' },
+        { id: 3, name: 'كاميرا 3: طاولة الكي والتشطيب', tag: 'Finition' }
       ]
     }
   };
@@ -46,7 +48,6 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
   const currentLocation = locations[activeCamera] || locations.cam_hanout_caisse;
   const streamUrl = `http://localhost:8000/stream/${activeCamera}?ai=${showAI}&channel=${activeChannel}&t=${streamKey}`;
 
-  // Poll status from local engine
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
@@ -67,80 +68,86 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
   }, [activeCamera, activeChannel]);
 
   return (
-    <div className="glass-panel rounded-2xl p-5 border border-white/10 relative overflow-hidden space-y-4">
-      {/* Top Header: Location Selector & Multi-Cam View Toggle */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-3 border-b border-white/10">
+    <div className="card-clean rounded-xl p-4 space-y-4">
+      {/* Top Header */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-            <Camera className="w-5 h-5" />
+          <div className="w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center text-amber-500 border border-slate-700">
+            <Camera className="w-4 h-4" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-white tracking-wide">
+              <h2 className="text-sm font-bold text-white">
                 {currentLocation.name}
               </h2>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                Dahua DVR (4 قنوات نشطة)
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-950 text-emerald-400 border border-emerald-800">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                Dahua DVR (متصل)
               </span>
             </div>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-slate-400">
               {viewMode === 'single'
                 ? currentLocation.channels.find((c) => c.id === activeChannel)?.name
-                : 'عرض شبكة الكاميرات المجمعة (Multi-Cam Grid)'}
+                : 'عرض شبكة الكاميرات المجمعة'}
             </p>
           </div>
         </div>
 
         {/* Location Selector Tabs */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 bg-gray-900/90 p-1 rounded-xl border border-white/5">
-            {Object.entries(locations).map(([id, loc]) => (
-              <button
-                key={id}
-                onClick={() => {
-                  onCameraChange(id);
-                  setActiveChannel(1);
-                  setStreamKey(Date.now());
-                }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                  activeCamera === id
-                    ? 'bg-amber-500 text-gray-950 shadow-md shadow-amber-500/20'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                {loc.name.split(' ')[0]}
-              </button>
-            ))}
+          <div className="flex items-center gap-1 bg-[#090d16] p-1 rounded-lg border border-slate-800">
+            {Object.entries(locations).map(([id, loc]) => {
+              const Icon = loc.icon;
+              return (
+                <button
+                  key={id}
+                  onClick={() => {
+                    onCameraChange(id);
+                    setActiveChannel(1);
+                    setStreamKey(Date.now());
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold transition-all ${
+                    activeCamera === id
+                      ? 'bg-amber-500 text-slate-950 font-bold'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  {id === 'cam_hanout_caisse' && 'الحانوت'}
+                  {id === 'cam_depot_packing' && 'الديبو'}
+                  {id === 'cam_atelier_machines' && 'الورشة'}
+                </button>
+              );
+            })}
           </div>
 
-          {/* Single vs Grid Mode Toggle */}
-          <div className="flex items-center gap-1 bg-gray-900/90 p-1 rounded-xl border border-white/5">
+          {/* View Mode Toggle */}
+          <div className="flex items-center gap-1 bg-[#090d16] p-1 rounded-lg border border-slate-800">
             <button
               onClick={() => setViewMode('single')}
-              title="عرض كاميرا مفردة كبيرة"
-              className={`p-1.5 rounded-lg text-xs transition-all ${
-                viewMode === 'single' ? 'bg-gray-800 text-amber-400' : 'text-gray-400 hover:text-white'
+              title="عرض كاميرا رئيسية"
+              className={`p-1.5 rounded text-xs transition-all ${
+                viewMode === 'single' ? 'bg-slate-800 text-amber-400' : 'text-slate-400 hover:text-white'
               }`}
             >
-              <Layout className="w-4 h-4" />
+              <Layout className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => setViewMode('grid')}
-              title="عرض شبكة 4 كاميرات في نفس الوقت"
-              className={`p-1.5 rounded-lg text-xs transition-all ${
-                viewMode === 'grid' ? 'bg-gray-800 text-amber-400' : 'text-gray-400 hover:text-white'
+              title="عرض شبكة الكاميرات"
+              className={`p-1.5 rounded text-xs transition-all ${
+                viewMode === 'grid' ? 'bg-slate-800 text-amber-400' : 'text-slate-400 hover:text-white'
               }`}
             >
-              <Grid className="w-4 h-4" />
+              <Grid className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Internal Channel Selector Bar (داخل نفس الموقع: كاميرا 1، 2، 3، 4) */}
-      <div className="flex flex-wrap items-center gap-2 bg-black/40 p-2 rounded-xl border border-white/5">
-        <span className="text-xs font-bold text-gray-400 pl-2">اختر الكاميرا داخل الموقع:</span>
+      {/* Internal Channel Selector Bar */}
+      <div className="flex flex-wrap items-center gap-1.5 bg-[#090d16] p-1.5 rounded-lg border border-slate-800">
+        <span className="text-xs font-semibold text-slate-400 px-2">الكاميرات:</span>
         {currentLocation.channels.map((ch) => (
           <button
             key={ch.id}
@@ -149,13 +156,13 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
               setViewMode('single');
               setStreamKey(Date.now());
             }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs transition-all ${
               viewMode === 'single' && activeChannel === ch.id
-                ? 'bg-cyan-500 text-gray-950 shadow-sm shadow-cyan-500/30'
-                : 'bg-gray-900/80 text-gray-300 hover:bg-gray-800 border border-white/5'
+                ? 'bg-slate-800 text-white font-bold border border-slate-600'
+                : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <span className={`w-2 h-2 rounded-full ${activeChannel === ch.id ? 'bg-gray-950' : 'bg-emerald-400'}`}></span>
+            <span className={`w-1.5 h-1.5 rounded-full ${activeChannel === ch.id ? 'bg-amber-400' : 'bg-slate-600'}`}></span>
             {ch.name}
           </button>
         ))}
@@ -163,8 +170,7 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
 
       {/* Video Viewport */}
       {viewMode === 'single' ? (
-        /* Single Big Camera View */
-        <div className="relative aspect-video w-full rounded-xl overflow-hidden bg-gray-950 border border-white/10 group shadow-2xl">
+        <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-black border border-slate-800">
           {!streamError ? (
             <img
               src={streamUrl}
@@ -173,17 +179,17 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
               onError={() => setStreamError(true)}
             />
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center gap-3 p-6 text-center bg-gray-900/90">
-              <Radio className="w-10 h-10 text-amber-400/60 animate-bounce" />
-              <h3 className="text-base font-bold text-gray-200">في انتظار اتصال الكاميرا...</h3>
+            <div className="w-full h-full flex flex-col items-center justify-center gap-2 p-6 text-center bg-slate-900">
+              <Radio className="w-8 h-8 text-amber-500" />
+              <h3 className="text-sm font-bold text-slate-200">في انتظار تشغيل البث...</h3>
               <button
                 onClick={() => {
                   setStreamError(false);
                   setStreamKey(Date.now());
                 }}
-                className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold hover:bg-amber-500/30 transition-all"
+                className="mt-1 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-800 text-slate-200 border border-slate-700 text-xs font-semibold hover:bg-slate-700 transition-all"
               >
-                <RefreshCw className="w-4 h-4" />
+                <RefreshCw className="w-3.5 h-3.5" />
                 إعادة المحاولة
               </button>
             </div>
@@ -195,67 +201,67 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
               {activeChannel === 1 && activeCamera === 'cam_hanout_caisse' && (
                 <>
                   <div
-                    className={`px-3 py-1 rounded-lg backdrop-blur-md text-xs font-bold border transition-all ${
+                    className={`px-2.5 py-1 rounded text-xs font-bold border ${
                       streamState.drawer_open
-                        ? 'bg-rose-500/80 text-white border-rose-400 glow-red animate-pulse'
-                        : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                        ? 'bg-rose-950 text-rose-300 border-rose-800'
+                        : 'bg-slate-900/90 text-slate-300 border-slate-700'
                     }`}
                   >
-                    {streamState.drawer_open ? '⚠️ لاكيس: مفتوحة (OPEN)' : '🔒 لاكيس: مغلقة (CLOSED)'}
+                    {streamState.drawer_open ? 'لاكيس: مفتوحة' : 'لاكيس: مغلقة'}
                   </div>
 
                   <div
-                    className={`px-3 py-1 rounded-lg backdrop-blur-md text-xs font-bold border ${
+                    className={`px-2.5 py-1 rounded text-xs font-bold border ${
                       streamState.customer_present
-                        ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
-                        : 'bg-gray-800/80 text-gray-400 border-white/10'
+                        ? 'bg-slate-900/90 text-cyan-300 border-slate-700'
+                        : 'bg-slate-900/90 text-slate-400 border-slate-700'
                     }`}
                   >
-                    {streamState.customer_present ? '👤 زبون: متواجد' : '👤 زبون: لا يوجد'}
+                    {streamState.customer_present ? 'زبون: متواجد' : 'زبون: لا يوجد'}
                   </div>
                 </>
               )}
             </div>
 
-            <div className="bg-black/60 backdrop-blur-md px-3 py-1 rounded-lg border border-white/10 text-xs text-amber-400 font-mono font-bold">
+            <div className="bg-slate-900/90 px-2.5 py-1 rounded border border-slate-700 text-xs text-amber-400 font-mono font-bold" dir="ltr">
               DAHUA CH-{activeChannel}
             </div>
           </div>
 
-          {/* Bottom Floating Controls */}
-          <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between bg-black/70 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10">
-            <div className="flex items-center gap-2 text-xs text-gray-300">
-              <span className="font-semibold text-white">الذكاء الاصطناعي:</span>
-              <span className="text-amber-400 font-mono">YOLOv8 AI Active (CH-{activeChannel})</span>
+          {/* Bottom Floating Bar */}
+          <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between bg-slate-950/90 px-3 py-1.5 rounded-md border border-slate-800 text-xs">
+            <div className="flex items-center gap-2 text-slate-300">
+              <span className="text-slate-400">الذكاء الاصطناعي:</span>
+              <span className="text-amber-400 font-mono" dir="ltr">YOLOv8 Active (CH-{activeChannel})</span>
             </div>
 
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setShowAI(!showAI)}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                className={`flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold border transition-all ${
                   showAI
-                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
-                    : 'bg-gray-800 text-gray-400 border border-white/5'
+                    ? 'bg-slate-800 text-slate-200 border-slate-700'
+                    : 'bg-slate-900 text-slate-400 border-slate-800'
                 }`}
               >
-                {showAI ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                {showAI ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
                 {showAI ? 'إخفاء خطوط الـ AI' : 'إظهار خطوط الـ AI'}
               </button>
 
               {onOpenZoneEditor && (
                 <button
                   onClick={onOpenZoneEditor}
-                  className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 transition-all"
+                  className="flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold bg-amber-500 text-slate-950 hover:bg-amber-400 transition-all"
                 >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  رسم الـ Zones
+                  <Sliders className="w-3 h-3" />
+                  رسم وتحديد الـ Zones
                 </button>
               )}
             </div>
           </div>
         </div>
       ) : (
-        /* Multi-Cam 2x2 Grid View (عرض 4 كاميرات في ضربة وحدة) */
+        /* Multi-Cam 2x2 Grid View */
         <div className="grid grid-cols-2 gap-3">
           {currentLocation.channels.map((ch) => (
             <div
@@ -264,18 +270,18 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
                 setActiveChannel(ch.id);
                 setViewMode('single');
               }}
-              className="relative aspect-video rounded-xl overflow-hidden bg-gray-950 border border-white/10 hover:border-amber-500/50 cursor-pointer group transition-all"
+              className="relative aspect-video rounded-lg overflow-hidden bg-black border border-slate-800 hover:border-slate-600 cursor-pointer transition-all"
             >
               <img
                 src={`http://localhost:8000/stream/${activeCamera}?ai=${showAI}&channel=${ch.id}&t=${streamKey}`}
                 alt={ch.name}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute top-2 left-2 bg-black/70 backdrop-blur px-2 py-0.5 rounded text-[11px] font-bold text-white border border-white/10">
+              <div className="absolute top-2 right-2 bg-slate-900/90 px-2 py-0.5 rounded text-[11px] font-semibold text-white border border-slate-700">
                 {ch.name}
               </div>
-              <div className="absolute bottom-2 right-2 bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded text-[10px] font-mono border border-amber-500/30 opacity-0 group-hover:opacity-100 transition-opacity">
-                انقر للتكبير 🔍
+              <div className="absolute bottom-2 left-2 bg-slate-900/90 text-slate-300 px-2 py-0.5 rounded text-[10px] font-mono border border-slate-700" dir="ltr">
+                CH-{ch.id}
               </div>
             </div>
           ))}

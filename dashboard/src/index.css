@@ -1,86 +1,41 @@
 @import "tailwindcss";
 
 @layer base {
-  :root {
-    --bg-primary: #0b0f19;
-    --bg-surface: #111827;
-    --bg-card: rgba(17, 24, 39, 0.75);
-    --border-subtle: rgba(255, 255, 255, 0.08);
-    --accent-gold: #f59e0b;
-    --accent-cyan: #06b6d4;
-    --accent-emerald: #10b981;
-    --accent-rose: #f43f5e;
+  body {
+    background-color: #090d16;
+    color: #f1f5f9;
+    font-family: 'Cairo', sans-serif;
+    direction: rtl;
+    text-align: right;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
   }
 }
 
-* {
-  font-family: 'Cairo', 'Outfit', system-ui, -apple-system, sans-serif;
-  box-sizing: border-box;
+/* Minimalist Clean Dashboard Card */
+.card-clean {
+  background-color: #101623;
+  border: 1px solid #1e293b;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
 }
 
-body {
-  background-color: #080c14;
-  color: #f3f4f6;
-  min-height: 100vh;
-  margin: 0;
-  overflow-x: hidden;
+.card-clean:hover {
+  border-color: #334155;
 }
 
-/* Luxury Glassmorphism */
-.glass-panel {
-  background: rgba(15, 23, 42, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-}
-
-.glass-card {
-  background: rgba(30, 41, 59, 0.5);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.glass-card:hover {
-  border-color: rgba(245, 158, 11, 0.3);
-  box-shadow: 0 10px 30px -10px rgba(245, 158, 11, 0.15);
-}
-
-/* Custom Scrollbar */
+/* Clean Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0b0f19;
+  background: #090d16;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1f2937;
-  border-radius: 9999px;
+  background: #1e293b;
+  border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #374151;
-}
-
-/* Glowing Pulsing Animations */
-@keyframes pulse-ring {
-  0% { transform: scale(0.95); opacity: 0.8; }
-  50% { transform: scale(1.05); opacity: 0.3; }
-  100% { transform: scale(0.95); opacity: 0.8; }
-}
-
-.pulse-alert {
-  animation: pulse-ring 2s infinite ease-in-out;
-}
-
-/* Badge glows */
-.glow-red {
-  box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
-}
-.glow-emerald {
-  box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
-}
-.glow-amber {
-  box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+  background: #334155;
 }

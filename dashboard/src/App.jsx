@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Camera, Bell, Sliders, ExternalLink, Clock, Radio, Activity, AlertTriangle, FileText, CheckCircle2 } from 'lucide-react';
+import { Shield, Clock, Radio, AlertTriangle, FileText } from 'lucide-react';
 import LiveCameraFeed from './components/LiveCameraFeed';
 import IncidentTimeline from './components/IncidentTimeline';
 import CaisseMetrics from './components/CaisseMetrics';
@@ -41,26 +41,9 @@ export default function App() {
       )}
 
       {/* Clean White Navbar */}
-      <header className="border-b border-slate-200 bg-white px-6 py-3.5 flex items-center justify-between sticky top-0 z-40 shadow-xs">
-        {/* Brand */}
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white font-bold">
-            <Shield className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-base font-bold text-slate-900 tracking-wide font-outfit">
-                PYJAMA DZ <span className="text-xs font-cairo font-semibold text-slate-500">| نظام المراقبة الذكي</span>
-              </h1>
-              <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-mono border border-slate-200">
-                v1.0
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Center Tabs */}
-        <nav className="hidden md:flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
+      <header className="border-b border-slate-200 bg-white px-6 py-3 flex items-center justify-between sticky top-0 z-40 shadow-xs">
+        {/* Navigation Tabs */}
+        <nav className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
           <button
             onClick={() => setActiveTab('live')}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-bold transition-all ${
@@ -86,17 +69,10 @@ export default function App() {
           </button>
         </nav>
 
-        {/* Right Status */}
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-1.5 bg-slate-100 px-3 py-1 rounded-md border border-slate-200 text-xs text-slate-700 font-mono" dir="ltr">
-            <Clock className="w-3.5 h-3.5 text-slate-500" />
-            {currentTime}
-          </div>
-
-          <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-md text-xs font-semibold text-emerald-700">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-            Supabase متصل
-          </div>
+        {/* Clock */}
+        <div className="flex items-center gap-1.5 bg-slate-100 px-3 py-1 rounded-md border border-slate-200 text-xs text-slate-700 font-mono" dir="ltr">
+          <Clock className="w-3.5 h-3.5 text-slate-500" />
+          {currentTime}
         </div>
       </header>
 

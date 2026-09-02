@@ -11,6 +11,8 @@ from engine.telegram_bot import TelegramNotifier
 from engine.supabase_sync import SupabaseSync
 from engine.config import (
     CAISSE_UNATTENDED_THRESHOLD_SECONDS,
+    PRE_EVENT_BUFFER_SECONDS,
+    POST_EVENT_BUFFER_SECONDS,
     ABNORMAL_DISCOUNT_THRESHOLD_DZD,
     ABNORMAL_DISCOUNT_PERCENTAGE
 )
@@ -133,9 +135,9 @@ class CaisseDetector:
         duration_seconds: int,
         event_timestamp: float
     ):
-        # 1. Extract frames from buffer (-10s to +5s)
-        start_ts = event_timestamp - 10.0
-        end_ts = event_timestamp + 5.0
+        # 1. Extract frames from buffer (20s before event until event ends + 5s)
+        start_ts = event_timestamp - PRE_EVENT_BUFFER_SECONDS
+        end_ts = max(time.time(), event_timestamp + duration_seconds) + POST_EVENT_BUFFER_SECONDS
         frames_data = self.stream.ring_buffer.extract_clip_frames(start_ts, end_ts)
 
         # 2. Create MP4 Video Clip

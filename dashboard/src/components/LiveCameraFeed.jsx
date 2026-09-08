@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Eye, EyeOff, Radio, Grid, Layout, Sliders, RefreshCw, Store, Package, Scissors } from 'lucide-react';
+import { Camera, Eye, EyeOff, Radio, Grid, Layout, Sliders, RefreshCw, Store, Package, Scissors, Scan, CheckCircle2 } from 'lucide-react';
 
 export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZoneEditor }) {
   const [showAI, setShowAI] = useState(true);
@@ -7,6 +7,13 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
   const [viewMode, setViewMode] = useState('single');
   const [streamError, setStreamError] = useState(false);
   const [streamKey, setStreamKey] = useState(Date.now());
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanMessage, setScanMessage] = useState('');
+  const [discoveredChannels, setDiscoveredChannels] = useState([
+    { id: 1, name: 'كاميرا 1: لاكيس والدرج', tag: 'Caisse', status: 'online' },
+    { id: 2, name: 'كاميرا 2: المدخل الرئيسي', tag: 'Entree', status: 'online' },
+    { id: 3, name: 'كاميرا 3: رفوف السلعة والبيجامات', tag: 'Rayons', status: 'online' }
+  ]);
   const [streamState, setStreamState] = useState({
     drawer_open: false,
     customer_present: false,
@@ -14,28 +21,52 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
     sim_scenario: 'normal'
   });
 
+  // Fetch actually discovered cameras from Dahua DVR
+  useEffect(() => {
+    async function loadActiveCameras() {
+      try {
+        const res = await fetch('http://localhost:8000/api/cameras/active');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.cameras && data.cameras.length > 0) {
+            setDiscoveredChannels(data.cameras);
+          }
+        }
+      } catch (e) {
+        // Fallback gracefully
+      }
+    }
+    loadActiveCameras();
+  }, []);
+
+  async function handleAutoDetectCameras() {
+    setIsScanning(true);
+    setScanMessage('جاري فحص مخارج DVR داهوا واكتشاف الكاميرات...');
+    try {
+      const res = await fetch('http://localhost:8000/api/cameras/scan', { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.cameras && data.cameras.length > 0) {
+          setDiscoveredChannels(data.cameras);
+          setActiveChannel(data.cameras[0].id);
+          setScanMessage(`تم اكتشاف ${data.cameras.length} كاميرا نشطة ومتصلة بالـ DVR بنجاح`);
+        } else {
+          setScanMessage('لم يتم العثور على كاميرات إضافية متصلة بالشبكة حالياً');
+        }
+      }
+    } catch (e) {
+      setScanMessage('تعذر الاتصال بـ DVR (تأكد من تشغيل السيرفر في شبكة المحل)');
+    } finally {
+      setIsScanning(false);
+      setTimeout(() => setScanMessage(''), 4000);
+    }
+  }
+
   const locations = {
     cam_hanout_caisse: {
       name: 'المحل الرئيسي (الحانوت)',
       icon: Store,
-      channels: [
-        { id: 1, name: 'كاميرا 1: لاكيس والدرج', tag: 'Caisse' },
-        { id: 2, name: 'كاميرا 2: المدخل الرئيسي', tag: 'Entree' },
-        { id: 3, name: 'كاميرا 3: رفوف السلعة والبيجامات', tag: 'Rayons' },
-        { id: 4, name: 'كاميرا 4: الممر وغرفة القياس', tag: 'Cabines' },
-        { id: 5, name: 'كاميرا 5: مدخل السلعة والمخزن', tag: 'Stock' },
-        { id: 6, name: 'كاميرا 6: ممر العرض والواجهة', tag: 'Vitrine' },
-        { id: 7, name: 'كاميرا 7: الصالة المركزية', tag: 'Centre' },
-        { id: 8, name: 'كاميرا 8: زاوية شاملة علوية', tag: 'Panoramique' },
-        { id: 9, name: 'كاميرا 9: جناح البيجامات الشتوية', tag: 'Hiver' },
-        { id: 10, name: 'كاميرا 10: جناح البيجامات الصيفية', tag: 'Ete' },
-        { id: 11, name: 'كاميرا 11: ركن ملابس الأطفال', tag: 'Enfants' },
-        { id: 12, name: 'كاميرا 12: ركن التخفيضات والعروض', tag: 'Promo' },
-        { id: 13, name: 'كاميرا 13: خلف كونتوار الكاسة', tag: 'Staff' },
-        { id: 14, name: 'كاميرا 14: باب الطوارئ الخلفي', tag: 'Secours' },
-        { id: 15, name: 'كاميرا 15: زاوية المراقبة والأمان', tag: 'Securite' },
-        { id: 16, name: 'كاميرا 16: المدخل الخارجي والرصيف', tag: 'Exterieur' }
-      ]
+      channels: discoveredChannels
     },
     cam_depot_packing: {
       name: 'المخزن المركزي (الديبو)',
@@ -157,27 +188,53 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
         </div>
       </div>
 
-      {/* Internal Channel Selector Bar */}
-      <div className="flex flex-wrap items-center gap-1.5 bg-slate-50 p-1.5 rounded-lg border border-slate-200">
-        <span className="text-xs font-semibold text-slate-500 px-2">الكاميرات:</span>
-        {currentLocation.channels.map((ch) => (
-          <button
-            key={ch.id}
-            onClick={() => {
-              setActiveChannel(ch.id);
-              setViewMode('single');
-              setStreamKey(Date.now());
-            }}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs transition-all ${
-              viewMode === 'single' && activeChannel === ch.id
-                ? 'bg-white text-slate-900 font-bold border border-slate-300 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <span className={`w-1.5 h-1.5 rounded-full ${activeChannel === ch.id ? 'bg-slate-900' : 'bg-slate-300'}`}></span>
-            {ch.name}
-          </button>
-        ))}
+      {/* Internal Channel Selector Bar with Auto-Detection */}
+      <div className="space-y-1.5">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-slate-700">
+              الكاميرات المتصلة فعلياً ({currentLocation.channels.length} كاميرات متصلة بالـ DVR):
+            </span>
+            {scanMessage && (
+              <span className="text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                {scanMessage}
+              </span>
+            )}
+          </div>
+
+          {activeCamera === 'cam_hanout_caisse' && (
+            <button
+              onClick={handleAutoDetectCameras}
+              disabled={isScanning}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-[11px] font-semibold transition-all shadow-2xs cursor-pointer disabled:opacity-60"
+              title="فحص مخارج DVR داهوا واكتشاف الكاميرات النشطة تلقائياً"
+            >
+              <Scan className={`w-3.5 h-3.5 ${isScanning ? 'animate-spin text-indigo-600' : 'text-slate-600'}`} />
+              {isScanning ? 'جاري فحص الـ DVR...' : 'كشف الكاميرات تلقائياً (Auto-Detect)'}
+            </button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1.5 bg-slate-50 p-1.5 rounded-lg border border-slate-200 overflow-x-auto scrollbar-none">
+          {currentLocation.channels.map((ch) => (
+            <button
+              key={ch.id}
+              onClick={() => {
+                setActiveChannel(ch.id);
+                setViewMode('single');
+                setStreamKey(Date.now());
+              }}
+              className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs transition-all whitespace-nowrap ${
+                viewMode === 'single' && activeChannel === ch.id
+                  ? 'bg-white text-slate-900 font-bold border border-slate-300 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 bg-transparent'
+              }`}
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${activeChannel === ch.id ? 'bg-slate-900' : 'bg-emerald-500'}`}></span>
+              {ch.name}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Video Viewport */}

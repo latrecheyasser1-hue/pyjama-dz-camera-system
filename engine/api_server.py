@@ -66,6 +66,21 @@ def send_midnight_now():
     results = DAILY_REPORTER.dispatch_all_reports()
     return {"ok": True, "dispatched": len(results), "reports": results}
 
+from engine.camera_discovery import CameraDiscovery
+camera_discovery = CameraDiscovery()
+
+@app.get("/api/cameras/active")
+def get_active_cameras():
+    """Returns the list of currently detected and active camera channels."""
+    channels = camera_discovery.get_active_channels()
+    return {"ok": True, "count": len(channels), "cameras": channels}
+
+@app.post("/api/cameras/scan")
+def scan_cameras():
+    """Scans the Dahua DVR in real-time to auto-detect connected channels."""
+    detected = camera_discovery.scan_network()
+    return {"ok": True, "count": len(detected), "cameras": detected}
+
 @app.get("/status")
 def get_status():
     status_data = {}

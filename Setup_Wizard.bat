@@ -31,9 +31,9 @@ if "%choice%"=="1" (
 )
 
 echo.
-echo [?] ادخل عنوان IP لعلبة DVR او اضغط Enter للاستعمال الافتراضي [192.168.1.108]:
+echo [?] ادخل عنوان IP لعلبة DVR او اضغط Enter للاستعمال الافتراضي [192.168.1.150]:
 set /p DVR_IP=""
-if "%DVR_IP%"=="" set DVR_IP=192.168.1.108
+if "%DVR_IP%"=="" set DVR_IP=192.168.1.150
 
 echo [?] ادخل كلمة المرور (Password) لعلبة DVR [admin123]:
 set /p DVR_PASS=""
@@ -41,7 +41,7 @@ if "%DVR_PASS%"=="" set DVR_PASS=admin123
 
 echo.
 echo [OK] جار ضبط الاعدادات وحفظها في .env...
-echo RTSP_%LOCATION%_CAISSE=rtsp://admin:%DVR_PASS%@%DVR_IP%:554/cam/realmonitor?channel=1^&subtype=1 >> .env
+echo RTSP_%LOCATION%_CAISSE=rtsp://admin:%DVR_PASS%@%DVR_IP%:554/cam/realmonitor?channel=1^&subtype=0 >> .env
 
 echo.
 echo ========================================================

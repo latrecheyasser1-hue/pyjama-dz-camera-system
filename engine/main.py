@@ -33,6 +33,8 @@ from engine.supabase_sync import SupabaseSync
 from engine.telegram_bot import TelegramNotifier
 from engine.caisse_detector import CaisseDetector
 from engine.pos_monitor import POSMonitor
+from engine.daily_reporter import DailyWorkerReporter
+from engine.face_recognizer import FaceRecognizer
 from engine.api_server import app, init_api
 
 def detector_worker(caisse_detector: CaisseDetector, stop_event: threading.Event):
@@ -54,6 +56,15 @@ def heartbeat_worker(supabase_sync: SupabaseSync, stop_event: threading.Event):
             supabase_sync.update_camera_heartbeat("cam_atelier_machines", status="online", fps=15)
         except Exception as e:
             print(f"[Heartbeat Error] {e}")
+        time.sleep(30)
+
+def midnight_reporter_worker(daily_reporter: DailyWorkerReporter, stop_event: threading.Event):
+    """Checks time every 30 seconds and automatically sends 00:00 worker reports to Telegram."""
+    while not stop_event.is_set():
+        try:
+            daily_reporter.check_and_run_midnight_schedule()
+        except Exception as e:
+            print(f"[Midnight Reporter Error] {e}")
         time.sleep(30)
 
 def main():
@@ -98,7 +109,14 @@ def main():
     for stream in streams.values():
         stream.start()
 
-    # 3. Initialize Detectors
+    # 3. Initialize Detectors & Face Recognition
+    face_recognizer = FaceRecognizer()
+    daily_reporter = DailyWorkerReporter(
+        telegram_notifier=telegram_notifier,
+        supabase_sync=supabase_sync,
+        face_recognizer=face_recognizer
+    )
+
     caisse_detector = CaisseDetector(
         stream_manager=streams["cam_hanout_caisse"],
         supabase_sync=supabase_sync,
@@ -118,8 +136,11 @@ def main():
     hb_thread = threading.Thread(target=heartbeat_worker, args=(supabase_sync, stop_event), daemon=True)
     hb_thread.start()
 
+    rep_thread = threading.Thread(target=midnight_reporter_worker, args=(daily_reporter, stop_event), daemon=True)
+    rep_thread.start()
+
     # 5. Initialize API Server
-    init_api(streams, caisse_detector, pos_monitor)
+    init_api(streams, caisse_detector, pos_monitor, daily_reporter=daily_reporter)
 
     print("\n[Main] Local Video Streaming & API Server listening on: http://127.0.0.1:8000")
     print("[Main] Caisse Live MJPEG Feed: http://127.0.0.1:8000/stream/cam_hanout_caisse")

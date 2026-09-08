@@ -22,7 +22,10 @@ class TelegramNotifier:
 
     def send_message(self, text: str) -> Optional[dict]:
         if not self.is_configured():
-            print(f"[TelegramMock] Message (Not sent - token missing):\n{text}")
+            try:
+                print(f"[TelegramMock] Message (Not sent - token missing):\n{text}")
+            except Exception:
+                print(f"[TelegramMock] Message (Not sent - token missing) [Text logged]")
             return {"mock": True, "ok": True}
 
         url = f"{self.base_url}/sendMessage"
@@ -97,3 +100,36 @@ class TelegramNotifier:
         header = f"<b>تقرير منتصف الليل (00:00) - Pyjama DZ</b>\n<b>التاريخ:</b> {date_str}\n<b>الفرع:</b> {location.upper()}\n\n"
         full_text = header + summary_markdown
         return self.send_message(full_text)
+
+    def send_photo_message(self, photo_path: str, caption: str) -> Optional[dict]:
+        """Send a photo with HTML caption (e.g. worker Face ID with their daily report)."""
+        if not self.is_configured():
+            try:
+                print(f"[TelegramMock] Photo Report (Token missing):\n{caption}\nPhoto: {photo_path}")
+            except Exception:
+                print(f"[TelegramMock] Photo Report (Token missing) for {photo_path}")
+            return {"mock": True, "ok": True}
+
+        if not os.path.exists(photo_path):
+            return self.send_message(caption)
+
+        url = f"{self.base_url}/sendPhoto"
+        try:
+            with open(photo_path, "rb") as photo_file:
+                files = {"photo": photo_file}
+                data = {
+                    "chat_id": self.chat_id,
+                    "caption": caption,
+                    "parse_mode": "HTML"
+                }
+                res = requests.post(url, data=data, files=files, timeout=30)
+                res_data = res.json()
+                if res_data.get("ok"):
+                    print(f"[Telegram] Photo report sent successfully!")
+                    return res_data["result"]
+                else:
+                    print(f"[Telegram Error] {res_data.get('description')}")
+                    return self.send_message(caption)
+        except Exception as e:
+            print(f"[Telegram Exception] {e}")
+            return self.send_message(caption)

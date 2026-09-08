@@ -27,21 +27,44 @@ app.add_middleware(
 STREAMS = {}
 DETECTOR = None
 POS_MON = None
+DAILY_REPORTER = None
 
-def init_api(stream_managers: dict, caisse_detector, pos_monitor):
-    global STREAMS, DETECTOR, POS_MON
+def init_api(stream_managers: dict, caisse_detector, pos_monitor, daily_reporter=None):
+    global STREAMS, DETECTOR, POS_MON, DAILY_REPORTER
     STREAMS = stream_managers
     DETECTOR = caisse_detector
     POS_MON = pos_monitor
+    DAILY_REPORTER = daily_reporter
 
 @app.get("/")
 def root():
+    # If React dashboard build exists, serve it directly to the browser
+    dashboard_index = Path(__file__).resolve().parent.parent / "dashboard" / "dist" / "index.html"
+    if dashboard_index.exists():
+        return FileResponse(dashboard_index)
     return {
         "service": "Pyjama DZ AI Camera Guard",
         "status": "online",
         "cameras": list(STREAMS.keys()),
         "time": time.strftime("%Y-%m-%d %H:%M:%S")
     }
+
+@app.get("/api/health")
+def api_health():
+    return {
+        "service": "Pyjama DZ AI Camera Guard",
+        "status": "online",
+        "cameras": list(STREAMS.keys()),
+        "time": time.strftime("%Y-%m-%d %H:%M:%S")
+    }
+
+@app.post("/api/reports/send-midnight-now")
+def send_midnight_now():
+    """Trigger dispatch of individual worker reports via Telegram immediately."""
+    if not DAILY_REPORTER:
+        return {"ok": False, "error": "Daily reporter not initialized"}
+    results = DAILY_REPORTER.dispatch_all_reports()
+    return {"ok": True, "dispatched": len(results), "reports": results}
 
 @app.get("/status")
 def get_status():

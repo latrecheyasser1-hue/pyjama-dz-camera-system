@@ -22,7 +22,19 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
         { id: 1, name: 'كاميرا 1: لاكيس والدرج', tag: 'Caisse' },
         { id: 2, name: 'كاميرا 2: المدخل الرئيسي', tag: 'Entree' },
         { id: 3, name: 'كاميرا 3: رفوف السلعة والبيجامات', tag: 'Rayons' },
-        { id: 4, name: 'كاميرا 4: الممر وغرفة القياس', tag: 'Cabines' }
+        { id: 4, name: 'كاميرا 4: الممر وغرفة القياس', tag: 'Cabines' },
+        { id: 5, name: 'كاميرا 5: مدخل السلعة والمخزن', tag: 'Stock' },
+        { id: 6, name: 'كاميرا 6: ممر العرض والواجهة', tag: 'Vitrine' },
+        { id: 7, name: 'كاميرا 7: الصالة المركزية', tag: 'Centre' },
+        { id: 8, name: 'كاميرا 8: زاوية شاملة علوية', tag: 'Panoramique' },
+        { id: 9, name: 'كاميرا 9: جناح البيجامات الشتوية', tag: 'Hiver' },
+        { id: 10, name: 'كاميرا 10: جناح البيجامات الصيفية', tag: 'Ete' },
+        { id: 11, name: 'كاميرا 11: ركن ملابس الأطفال', tag: 'Enfants' },
+        { id: 12, name: 'كاميرا 12: ركن التخفيضات والعروض', tag: 'Promo' },
+        { id: 13, name: 'كاميرا 13: خلف كونتوار الكاسة', tag: 'Staff' },
+        { id: 14, name: 'كاميرا 14: باب الطوارئ الخلفي', tag: 'Secours' },
+        { id: 15, name: 'كاميرا 15: زاوية المراقبة والأمان', tag: 'Securite' },
+        { id: 16, name: 'كاميرا 16: المدخل الخارجي والرصيف', tag: 'Exterieur' }
       ]
     },
     cam_depot_packing: {

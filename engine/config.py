@@ -21,6 +21,11 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 TELEGRAM_ALERTS_CHANNEL_ID = os.getenv("TELEGRAM_ALERTS_CHANNEL_ID", "")
 
 # Camera Stream URLs (Dahua RTSP or simulation)
+DAHUA_DVR_IP = os.getenv("DAHUA_DVR_IP", "192.168.1.150")
+DAHUA_RTSP_PORT = int(os.getenv("DAHUA_RTSP_PORT", "554"))
+DAHUA_USERNAME = os.getenv("DAHUA_USERNAME", "admin")
+DAHUA_PASSWORD = os.getenv("DAHUA_PASSWORD", "admin123")
+
 RTSP_HANOUT_CAISSE = os.getenv("RTSP_HANOUT_CAISSE", "simulated://hanout_caisse")
 RTSP_DEPOT_PACKING = os.getenv("RTSP_DEPOT_PACKING", "simulated://depot_packing")
 RTSP_ATELIER_MACHINES = os.getenv("RTSP_ATELIER_MACHINES", "simulated://atelier_machines")

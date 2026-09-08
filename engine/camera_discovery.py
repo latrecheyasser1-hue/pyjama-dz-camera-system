@@ -10,7 +10,7 @@ import requests
 from requests.auth import HTTPDigestAuth
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 from engine.config import (
     ROOT_DIR,

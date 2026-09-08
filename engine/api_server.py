@@ -211,3 +211,9 @@ def get_worker_photo(filename: str):
     if not file_path.exists():
         return Response(status_code=404, content="Photo not found")
     return FileResponse(file_path, media_type="image/jpeg")
+
+# Mount React production build so dashboard is served directly from Python
+from fastapi.staticfiles import StaticFiles
+dashboard_dist = Path(__file__).resolve().parent.parent / "dashboard" / "dist"
+if dashboard_dist.exists():
+    app.mount("/", StaticFiles(directory=str(dashboard_dist), html=True), name="static_dashboard")

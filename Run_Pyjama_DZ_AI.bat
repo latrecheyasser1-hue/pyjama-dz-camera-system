@@ -18,19 +18,31 @@ if not exist "venv\Scripts\python.exe" (
 echo [2/3] Starting Local AI Vision Engine & Caisse Guard...
 start "" /B venv\Scripts\python.exe engine\main.py
 
-echo [3/3] Launching Web Dashboard...
-cd dashboard
-start "" /B npm run dev
+echo [3/3] Launching Dashboard...
+where node >nul 2>&1
+if %errorlevel% equ 0 (
+    if exist "dashboard\node_modules" (
+        cd dashboard
+        start "" /B npm run dev
+        cd ..
+        timeout /t 3 >nul
+        start http://localhost:3000
+        echo [OK] Live Dashboard: http://localhost:3000
+        goto :running
+    )
+)
 
 timeout /t 3 >nul
-start http://localhost:3000
+start http://localhost:8000
+echo [OK] Live Dashboard: http://localhost:8000
 
-echo.
-echo [OK] System is LIVE and Monitoring!
-echo [OK] Live Dashboard: http://localhost:3000
+:running
 echo [OK] Local API & Video Stream: http://127.0.0.1:8000
 echo.
+echo ========================================================
+echo [OK] System is LIVE and Monitoring!
 echo Keep this window open. Press any key to stop all services.
+echo ========================================================
 pause >nul
 
 echo Stopping services...

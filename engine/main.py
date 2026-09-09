@@ -126,7 +126,9 @@ def main():
     pos_monitor = POSMonitor(
         on_discount_event_cb=caisse_detector.handle_pos_discount_event
     )
-    pos_monitor.start_simulation()
+    # Background simulation is disabled by default to prevent generating continuous test events
+    # Test transactions can be triggered manually via Dashboard or POST /test/trigger-discount
+    # pos_monitor.start_simulation()
 
     # 4. Start Background Worker Threads
     stop_event = threading.Event()

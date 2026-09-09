@@ -138,13 +138,48 @@ export default function WorkersReport() {
   const fetchWorkers = async () => {
     setLoading(true);
     try {
-      // Try to fetch from local API server
+      // 1. First, check Supabase directly (cloud sync)
+      const { data: dbWorkers, error: dbError } = await supabase
+        .from('workers')
+        .select('*')
+        .order('created_at', { ascending: true });
+
+      if (!dbError && dbWorkers !== null) {
+        // Check if user has explicitly modified/cleared workers in localStorage
+        const deletedIds = JSON.parse(localStorage.getItem('pyjama_deleted_worker_ids') || '[]');
+        const activeDbWorkers = dbWorkers.filter(w => !deletedIds.includes(w.id));
+
+        const merged = activeDbWorkers.map((dbW) => {
+          const found = initialEvaluations.find((e) => e.full_name === dbW.full_name || e.id === dbW.id);
+          return {
+            ...dbW,
+            actual_hours: found?.actual_hours || '8 ساعات عمل',
+            idle_minutes: found?.idle_minutes || 0,
+            performance_score: found?.performance_score || 95,
+            mistakes: found?.mistakes || [],
+            positives: found?.positives || ['الانضباط في الوردية المحددة وحضور منصب العمل.'],
+            midnight_summary: found?.midnight_summary || `تقييم العامل: ${dbW.full_name}\n• المنصب: ${dbW.role}\n• الساعات الفعلية: 8 ساعات\n• الحالة: ممتاز`
+          };
+        });
+
+        // Also check any locally added workers not yet on cloud
+        const localCustom = JSON.parse(localStorage.getItem('pyjama_custom_workers') || '[]');
+        const filteredLocal = localCustom.filter(w => !deletedIds.includes(w.id));
+
+        setWorkers([...merged, ...filteredLocal]);
+        setLoading(false);
+        return;
+      }
+
+      // 2. Try to fetch from local API server
       const res = await fetch('http://localhost:8000/api/workers');
       if (res.ok) {
         const data = await res.json();
-        if (data && data.length > 0) {
-          // Merge with evaluations
-          const merged = data.map((apiW) => {
+        const deletedIds = JSON.parse(localStorage.getItem('pyjama_deleted_worker_ids') || '[]');
+        const activeApiWorkers = (data || []).filter(w => !deletedIds.includes(w.id));
+
+        if (activeApiWorkers.length > 0 || deletedIds.length > 0) {
+          const merged = activeApiWorkers.map((apiW) => {
             const found = initialEvaluations.find((e) => e.full_name === apiW.full_name || e.id === apiW.id);
             return {
               ...apiW,
@@ -162,9 +197,13 @@ export default function WorkersReport() {
         }
       }
     } catch (e) {
-      console.log('Using default evaluations:', e);
+      console.log('Workers fetch fallback:', e);
     }
-    setWorkers(initialEvaluations);
+
+    // 3. Fallback: only if user has not deleted them
+    const deletedIds = JSON.parse(localStorage.getItem('pyjama_deleted_worker_ids') || '[]');
+    const remaining = initialEvaluations.filter(w => !deletedIds.includes(w.id));
+    setWorkers(remaining);
     setLoading(false);
   };
 
@@ -188,6 +227,45 @@ export default function WorkersReport() {
     }
 
     setSubmitting(true);
+    const newWorkerId = `w-${Date.now()}`;
+    const newWorkerObj = {
+      id: newWorkerId,
+      full_name: formData.fullName,
+      role: formData.role,
+      location: formData.location,
+      workstation: formData.workstation || 'منصب العمل الرئيسي',
+      shift_start: formData.shiftStart,
+      shift_end: formData.shiftEnd,
+      actual_hours: '8 ساعات عمل',
+      idle_minutes: 0,
+      performance_score: 95,
+      mistakes: [],
+      positives: ['تسجيل جديد في نظام بصمة الوجه والمراقبة.'],
+      midnight_summary: `تقييم العامل: ${formData.fullName}\n• المنصب: ${formData.role}\n• الساعات الفعلية: 8 ساعات\n• الحالة: منتظم`
+    };
+
+    // Save to Supabase
+    try {
+      await supabase.from('workers').insert({
+        full_name: formData.fullName,
+        role: formData.role,
+        location: formData.location,
+        workstation: formData.workstation || 'منصب العمل الرئيسي',
+        is_active: true
+      });
+    } catch (sbErr) {
+      console.error('Supabase worker insert error:', sbErr);
+    }
+
+    // Save to LocalStorage
+    try {
+      const existing = JSON.parse(localStorage.getItem('pyjama_custom_workers') || '[]');
+      localStorage.setItem('pyjama_custom_workers', JSON.stringify([...existing, newWorkerObj]));
+    } catch (lsErr) {
+      console.error('LocalStorage save error:', lsErr);
+    }
+
+    // Also attempt local API if available
     try {
       const data = new FormData();
       data.append('full_name', formData.fullName);
@@ -199,44 +277,66 @@ export default function WorkersReport() {
       if (photoFile) {
         data.append('photo', photoFile);
       }
-
-      const res = await fetch('http://localhost:8000/api/workers/enroll', {
+      await fetch('http://localhost:8000/api/workers/enroll', {
         method: 'POST',
         body: data
       });
-
-      if (res.ok) {
-        alert(`تم تسجيل العامل ${formData.fullName} وبصمة وجهه بنجاح!`);
-        setShowAddModal(false);
-        setFormData({
-          fullName: '',
-          role: '',
-          location: 'hanout',
-          workstation: '',
-          shiftStart: '08:00',
-          shiftEnd: '17:00'
-        });
-        setPhotoFile(null);
-        setPhotoPreview(null);
-        fetchWorkers();
-      } else {
-        alert('حدث خطأ أثناء حفظ العامل.');
-      }
-    } catch (err) {
-      console.error(err);
-      alert('تعذر الاتصال بخادم الذكاء الاصطناعي.');
-    } finally {
-      setSubmitting(false);
+    } catch (localErr) {
+      // Local server might not be running on web/vercel
     }
+
+    setWorkers((prev) => [...prev, newWorkerObj]);
+    alert(`تم تسجيل العامل ${formData.fullName} بنجاح!`);
+    setShowAddModal(false);
+    setFormData({
+      fullName: '',
+      role: '',
+      location: 'hanout',
+      workstation: '',
+      shiftStart: '08:00',
+      shiftEnd: '17:00'
+    });
+    setPhotoFile(null);
+    setPhotoPreview(null);
+    setSubmitting(false);
   };
 
   const handleDeleteWorker = async (wid) => {
-    if (!confirm('هل تريد حذف هذا العامل من النظام وبصمة الوجه؟')) return;
+    const targetWorker = workers.find(w => w.id === wid);
+    if (!confirm(`هل تريد حذف العامل (${targetWorker?.full_name || 'هذا العامل'}) نهائياً من النظام؟`)) return;
+
+    // 1. Update UI state immediately
+    setWorkers((prev) => prev.filter((w) => w.id !== wid));
+
+    // 2. Persist deletion in localStorage so it never reappears on refresh
+    try {
+      const deletedIds = JSON.parse(localStorage.getItem('pyjama_deleted_worker_ids') || '[]');
+      if (!deletedIds.includes(wid)) {
+        deletedIds.push(wid);
+        localStorage.setItem('pyjama_deleted_worker_ids', JSON.stringify(deletedIds));
+      }
+      // Also clean up custom workers if stored locally
+      const custom = JSON.parse(localStorage.getItem('pyjama_custom_workers') || '[]');
+      localStorage.setItem('pyjama_custom_workers', JSON.stringify(custom.filter(w => w.id !== wid)));
+    } catch (e) {
+      console.error('LocalStorage delete error:', e);
+    }
+
+    // 3. Delete from Supabase cloud database
+    try {
+      if (targetWorker?.full_name) {
+        await supabase.from('workers').delete().eq('full_name', targetWorker.full_name);
+      }
+      await supabase.from('workers').delete().eq('id', wid);
+    } catch (sbErr) {
+      console.error('Supabase worker delete error:', sbErr);
+    }
+
+    // 4. Delete from local Python engine
     try {
       await fetch(`http://localhost:8000/api/workers/${wid}`, { method: 'DELETE' });
-      setWorkers((prev) => prev.filter((w) => w.id !== wid));
     } catch (e) {
-      console.error(e);
+      // Local daemon may not be reachable on Vercel
     }
   };
 

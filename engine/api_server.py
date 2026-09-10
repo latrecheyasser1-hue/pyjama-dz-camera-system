@@ -164,6 +164,29 @@ def video_feed(camera_id: str, ai: bool = True, channel: int = 1):
         media_type="multipart/x-mixed-replace; boundary=frame"
     )
 
+@app.get("/snapshot/{camera_id}")
+def get_snapshot(camera_id: str, channel: int = 1):
+    """Returns a single instant JPEG frame for a given channel without holding a streaming connection."""
+    frame = None
+    if camera_id == "cam_hanout_caisse" and channel > 0:
+        frame = dahua_pool.get_frame(channel)
+
+    if frame is None and camera_id in STREAMS:
+        frame = STREAMS[camera_id].get_latest_frame()
+
+    if frame is None:
+        return Response(status_code=404, content="Frame not available")
+
+    ret, jpeg = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+    if not ret:
+        return Response(status_code=500, content="Encoding error")
+
+    return Response(
+        content=jpeg.tobytes(),
+        media_type="image/jpeg",
+        headers={"Cache-Control": "no-cache, no-store, must-revalidate"}
+    )
+
 @app.get("/clips")
 def list_clips():
     """List all recorded suspicious MP4 clips."""

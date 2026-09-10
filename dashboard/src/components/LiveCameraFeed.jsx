@@ -428,30 +428,71 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
           </div>
         </div>
       ) : (
-        /* Multi-Cam 2x2 Grid View */
-        <div className="grid grid-cols-2 gap-3">
-          {currentLocation.channels.map((ch) => (
-            <div
-              key={ch.id}
-              onClick={() => {
-                setActiveChannel(ch.id);
-                setViewMode('single');
-              }}
-              className="relative aspect-video rounded-lg overflow-hidden bg-slate-950 border border-slate-200 hover:border-slate-400 cursor-pointer transition-all shadow-xs"
-            >
-              <img
-                src={`${currentServerUrl}/stream/${activeCamera}?ai=${showAI}&channel=${ch.id}&t=${streamKey}`}
-                alt={ch.name}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute top-2 right-2 bg-white/95 px-2 py-0.5 rounded text-[11px] font-semibold text-slate-800 border border-slate-200 shadow-xs">
-                {ch.name}
-              </div>
-              <div className="absolute bottom-2 left-2 bg-white/95 text-slate-800 px-2 py-0.5 rounded text-[10px] font-mono border border-slate-200 shadow-xs" dir="ltr">
-                CH-{ch.id}
-              </div>
+        /* Multi-Cam Grid View with Group Paging and 16-Camera Snapshot Polling */
+        <div className="space-y-3">
+          {/* Grid Sub-Filter Tabs */}
+          <div className="flex flex-wrap items-center justify-between gap-2 p-2 bg-slate-50 rounded-lg border border-slate-200">
+            <span className="text-xs font-bold text-slate-700">تصفح شبكة الكاميرات (لتفادي قيود المتصفح في البث المتزامن):</span>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {[
+                { id: 'all', label: 'الكل (16 كاميرا - تحديث Snapshot)' },
+                { id: '1-4', label: 'مجموعة 1 (1 - 4 بث حي)' },
+                { id: '5-8', label: 'مجموعة 2 (5 - 8 بث حي)' },
+                { id: '9-12', label: 'مجموعة 3 (9 - 12 لاكيس والكونتوار)' },
+                { id: '13-16', label: 'مجموعة 4 (13 - 16 بث حي)' }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setGridPage(tab.id)}
+                  className={`px-2.5 py-1 rounded text-xs font-semibold transition-all cursor-pointer ${
+                    gridPage === tab.id
+                      ? 'bg-slate-900 text-white shadow-xs'
+                      : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
-          ))}
+          </div>
+
+          <div className={`grid gap-3 ${gridPage === 'all' ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-2'}`}>
+            {currentLocation.channels
+              .filter((ch) => {
+                if (gridPage === '1-4') return ch.id >= 1 && ch.id <= 4;
+                if (gridPage === '5-8') return ch.id >= 5 && ch.id <= 8;
+                if (gridPage === '9-12') return ch.id >= 9 && ch.id <= 12;
+                if (gridPage === '13-16') return ch.id >= 13 && ch.id <= 16;
+                return true;
+              })
+              .map((ch) => (
+                <div
+                  key={ch.id}
+                  onClick={() => {
+                    setActiveChannel(ch.id);
+                    setViewMode('single');
+                    setStreamKey(Date.now());
+                  }}
+                  className="relative aspect-video rounded-lg overflow-hidden bg-slate-950 border border-slate-200 hover:border-slate-400 cursor-pointer transition-all shadow-xs group"
+                >
+                  <img
+                    src={
+                      gridPage === 'all'
+                        ? `${currentServerUrl}/snapshot/${activeCamera}?channel=${ch.id}&t=${snapshotTick}`
+                        : `${currentServerUrl}/stream/${activeCamera}?ai=${showAI}&channel=${ch.id}&t=${streamKey}`
+                    }
+                    alt={ch.name}
+                    className="w-full h-full object-cover group-hover:scale-102 transition-transform"
+                  />
+                  <div className="absolute top-2 right-2 bg-white/95 px-2 py-0.5 rounded text-[11px] font-semibold text-slate-800 border border-slate-200 shadow-xs">
+                    {ch.name}
+                  </div>
+                  <div className="absolute bottom-2 left-2 bg-white/95 text-slate-800 px-2 py-0.5 rounded text-[10px] font-mono border border-slate-200 shadow-xs" dir="ltr">
+                    CH-{ch.id}
+                  </div>
+                </div>
+              ))}
+          </div>
         </div>
       )}
     </div>

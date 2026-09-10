@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldAlert, Play, Clock, AlertTriangle, CheckCircle2, Tag, FileText, X, Video, Trash2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { getStreamServerUrl } from '../lib/streamConfig';
 
 export default function IncidentTimeline({ onNewAlert }) {
   const [events, setEvents] = useState([]);
@@ -185,9 +186,10 @@ export default function IncidentTimeline({ onNewAlert }) {
                 <div className="pt-1 flex items-center justify-end">
                   <button
                     onClick={() => {
+                      const server = getStreamServerUrl();
                       const videoUrl = item.local_clip_path
-                        ? `http://localhost:8000/clips/${item.local_clip_path.split('\\').pop().split('/').pop()}`
-                        : 'http://localhost:8000/clips/sample.mp4';
+                        ? `${server}/clips/${item.local_clip_path.split('\\').pop().split('/').pop()}`
+                        : `${server}/clips/sample.mp4`;
                       setSelectedVideo({ url: videoUrl, title: cleanTitle, time: timeFormatted });
                     }}
                     className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-white text-slate-700 border border-slate-300 text-[11px] font-semibold hover:bg-slate-50 shadow-xs transition-all"

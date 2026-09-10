@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Check, RotateCcw, Shield, Sliders } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { getStreamServerUrl } from '../lib/streamConfig';
 
 export default function ZoneEditor({ isOpen, onClose, activeCamera = 'cam_hanout_caisse' }) {
   const [points, setPoints] = useState([
@@ -123,7 +124,7 @@ export default function ZoneEditor({ isOpen, onClose, activeCamera = 'cam_hanout
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           <div className="lg:col-span-2 relative aspect-video bg-black rounded-lg overflow-hidden border border-slate-200 cursor-crosshair">
             <img
-              src={`http://localhost:8000/stream/${activeCamera}?ai=false`}
+              src={`${getStreamServerUrl()}/stream/${activeCamera}?ai=false`}
               alt="Snapshot"
               className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
             />

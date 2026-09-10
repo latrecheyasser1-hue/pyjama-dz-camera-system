@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Clock, AlertTriangle, CheckCircle2, Video, Send, Plus, Store, Package, Scissors, UserCheck, ShieldAlert, Award, Camera, Upload, Trash2, X, Sparkles } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { getStreamServerUrl } from '../lib/streamConfig';
 
 export default function WorkersReport() {
   const [workers, setWorkers] = useState([]);
@@ -172,7 +173,8 @@ export default function WorkersReport() {
       }
 
       // 2. Try to fetch from local API server
-      const res = await fetch('http://localhost:8000/api/workers');
+      const server = getStreamServerUrl();
+      const res = await fetch(`${server}/api/workers`);
       if (res.ok) {
         const data = await res.json();
         const deletedIds = JSON.parse(localStorage.getItem('pyjama_deleted_worker_ids') || '[]');
@@ -267,6 +269,7 @@ export default function WorkersReport() {
 
     // Also attempt local API if available
     try {
+      const server = getStreamServerUrl();
       const data = new FormData();
       data.append('full_name', formData.fullName);
       data.append('role', formData.role);
@@ -277,7 +280,7 @@ export default function WorkersReport() {
       if (photoFile) {
         data.append('photo', photoFile);
       }
-      await fetch('http://localhost:8000/api/workers/enroll', {
+      await fetch(`${server}/api/workers/enroll`, {
         method: 'POST',
         body: data
       });
@@ -334,7 +337,8 @@ export default function WorkersReport() {
 
     // 4. Delete from local Python engine
     try {
-      await fetch(`http://localhost:8000/api/workers/${wid}`, { method: 'DELETE' });
+      const server = getStreamServerUrl();
+      await fetch(`${server}/api/workers/${wid}`, { method: 'DELETE' });
     } catch (e) {
       // Local daemon may not be reachable on Vercel
     }
@@ -415,7 +419,7 @@ export default function WorkersReport() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filtered.map((worker) => {
           const photoUrl = worker.photo_filename
-            ? `http://localhost:8000/api/workers/photos/${worker.photo_filename}`
+            ? `${getStreamServerUrl()}/api/workers/photos/${worker.photo_filename}`
             : null;
 
           return (

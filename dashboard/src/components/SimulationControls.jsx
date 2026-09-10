@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { PlayCircle, ShieldAlert, Tag, CheckCircle2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { getStreamServerUrl } from '../lib/streamConfig';
 
 export default function SimulationControls({ onTrigger }) {
   const [loading, setLoading] = useState('');
@@ -15,7 +16,7 @@ export default function SimulationControls({ onTrigger }) {
       const endpoint = type === 'no_customer' ? '/test/trigger-no-customer' : '/test/trigger-discount';
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 1200);
-      const res = await fetch(`http://localhost:8000${endpoint}`, {
+      const res = await fetch(`${getStreamServerUrl()}${endpoint}`, {
         method: 'POST',
         signal: controller.signal
       });

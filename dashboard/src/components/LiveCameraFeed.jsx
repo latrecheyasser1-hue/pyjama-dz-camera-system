@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Eye, EyeOff, Radio, Grid, Layout, Sliders, RefreshCw, Store, Package, Scissors, Scan, CheckCircle2 } from 'lucide-react';
+import { Camera, Eye, EyeOff, Radio, Grid, Layout, Sliders, RefreshCw, Store, Package, Scissors, Scan, CheckCircle2, Globe, Server, Check } from 'lucide-react';
+import { getStreamServerUrl, setStreamServerUrl } from '../lib/streamConfig';
 
 export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZoneEditor }) {
   const [showAI, setShowAI] = useState(true);
@@ -9,6 +10,9 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
   const [streamKey, setStreamKey] = useState(Date.now());
   const [isScanning, setIsScanning] = useState(false);
   const [scanMessage, setScanMessage] = useState('');
+  const [currentServerUrl, setCurrentServerUrl] = useState(getStreamServerUrl());
+  const [showServerModal, setShowServerModal] = useState(false);
+  const [customServerInput, setCustomServerInput] = useState(getStreamServerUrl());
   const [discoveredChannels, setDiscoveredChannels] = useState([
     { id: 1, name: 'كاميرا 1: لاكيس والدرج', tag: 'Caisse', status: 'online' },
     { id: 2, name: 'كاميرا 2: المدخل الرئيسي', tag: 'Entree', status: 'online' },
@@ -25,7 +29,7 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
   useEffect(() => {
     async function loadActiveCameras() {
       try {
-        const res = await fetch('http://localhost:8000/api/cameras/active');
+        const res = await fetch(`${currentServerUrl}/api/cameras/active`);
         if (res.ok) {
           const data = await res.json();
           if (data.cameras && data.cameras.length > 0) {
@@ -37,13 +41,13 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
       }
     }
     loadActiveCameras();
-  }, []);
+  }, [currentServerUrl]);
 
   async function handleAutoDetectCameras() {
     setIsScanning(true);
     setScanMessage('جاري فحص مخارج DVR داهوا واكتشاف الكاميرات...');
     try {
-      const res = await fetch('http://localhost:8000/api/cameras/scan', { method: 'POST' });
+      const res = await fetch(`${currentServerUrl}/api/cameras/scan`, { method: 'POST' });
       if (res.ok) {
         const data = await res.json();
         if (data.cameras && data.cameras.length > 0) {
@@ -89,12 +93,12 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
   };
 
   const currentLocation = locations[activeCamera] || locations.cam_hanout_caisse;
-  const streamUrl = `http://localhost:8000/stream/${activeCamera}?ai=${showAI}&channel=${activeChannel}&t=${streamKey}`;
+  const streamUrl = `${currentServerUrl}/stream/${activeCamera}?ai=${showAI}&channel=${activeChannel}&t=${streamKey}`;
 
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const res = await fetch('http://localhost:8000/status');
+        const res = await fetch(`${currentServerUrl}/status`);
         if (res.ok) {
           const data = await res.json();
           if (data[activeCamera]?.state) {
@@ -108,7 +112,16 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [activeCamera, activeChannel]);
+  }, [activeCamera, activeChannel, currentServerUrl]);
+
+  const handleSaveServerUrl = (newUrl) => {
+    setStreamServerUrl(newUrl);
+    setCurrentServerUrl(getStreamServerUrl());
+    setCustomServerInput(getStreamServerUrl());
+    setShowServerModal(false);
+    setStreamKey(Date.now());
+    setStreamError(false);
+  };
 
   return (
     <div className="card-clean rounded-xl p-4 space-y-4">
@@ -127,6 +140,14 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                 Dahua DVR (متصل)
               </span>
+              <button
+                onClick={() => setShowServerModal(true)}
+                title="إعدادات اتصال البث المباشر (محلي / سحابي)"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition-all cursor-pointer"
+              >
+                <Globe className="w-3 h-3 text-slate-600" />
+                <span>مصدر البث</span>
+              </button>
             </div>
             <p className="text-xs text-slate-500">
               {viewMode === 'single'
@@ -187,6 +208,79 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
           </div>
         </div>
       </div>
+
+      {/* Stream Server Configuration Modal */}
+      {showServerModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-xl shadow-xl border border-slate-200 max-w-md w-full p-5 space-y-4 font-cairo">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <Server className="w-5 h-5 text-slate-800" />
+                <h3 className="text-sm font-bold text-slate-900">إعدادات مصدر البث المباشر (Live Stream Source)</h3>
+              </div>
+              <button
+                onClick={() => setShowServerModal(false)}
+                className="text-slate-400 hover:text-slate-600 text-xs"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed">
+              اختر أين يتواجد خادم الكاميرات لتشغيل البث المباشر من أي جهاز (البيسي تاعك، التيليفون، أو بيسي الحانوت):
+            </p>
+
+            <div className="space-y-2">
+              <button
+                onClick={() => handleSaveServerUrl('http://localhost:8000')}
+                className={`w-full p-3 rounded-lg border text-right transition-all flex items-center justify-between text-xs ${
+                  currentServerUrl === 'http://localhost:8000'
+                    ? 'border-slate-900 bg-slate-50 font-bold text-slate-900'
+                    : 'border-slate-200 hover:border-slate-400 text-slate-700'
+                }`}
+              >
+                <div>
+                  <span className="block font-bold">1. نفس بيسي الحانوت (Localhost)</span>
+                  <span className="text-[11px] text-slate-500 font-mono" dir="ltr">http://localhost:8000</span>
+                </div>
+                {currentServerUrl === 'http://localhost:8000' && <Check className="w-4 h-4 text-slate-900" />}
+              </button>
+
+              <div className="p-3 rounded-lg border border-slate-200 space-y-2 text-xs">
+                <span className="block font-bold text-slate-800">2. عبر ويفي الحانوت (Wi-Fi Local IP) أو نفق Cloudflare:</span>
+                <p className="text-[11px] text-slate-500">
+                  إذا كنت في ويفي الحانوت، اكتب IP بيسي الحانوت (مثلاً: http://192.168.1.15:8000). أو ضع رابط Cloudflare Tunnel للبث خارج المحل:
+                </p>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder="http://192.168.1.XX:8000 أو https://tunnel.trycloudflare.com"
+                    value={customServerInput}
+                    onChange={(e) => setCustomServerInput(e.target.value)}
+                    className="flex-1 px-3 py-1.5 rounded border border-slate-300 text-xs font-mono focus:outline-none focus:border-slate-800"
+                    dir="ltr"
+                  />
+                  <button
+                    onClick={() => handleSaveServerUrl(customServerInput)}
+                    className="px-3 py-1.5 rounded bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition-all shrink-0"
+                  >
+                    حفظ وتطبيق
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                onClick={() => setShowServerModal(false)}
+                className="px-4 py-1.5 rounded border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+              >
+                إغلاق
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Internal Channel Selector Bar with Auto-Detection */}
       <div className="space-y-1.5">
@@ -338,7 +432,7 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
               className="relative aspect-video rounded-lg overflow-hidden bg-slate-950 border border-slate-200 hover:border-slate-400 cursor-pointer transition-all shadow-xs"
             >
               <img
-                src={`http://localhost:8000/stream/${activeCamera}?ai=${showAI}&channel=${ch.id}&t=${streamKey}`}
+                src={`${currentServerUrl}/stream/${activeCamera}?ai=${showAI}&channel=${ch.id}&t=${streamKey}`}
                 alt={ch.name}
                 className="w-full h-full object-cover"
               />

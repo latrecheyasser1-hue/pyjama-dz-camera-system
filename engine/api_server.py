@@ -94,14 +94,22 @@ def get_status():
         }
     return status_data
 
+from engine.dahua_pool import dahua_pool
+
 def generate_mjpeg(camera_id: str, show_ai: bool = True, channel: int = 1):
-    """Generator for MJPEG live camera streaming to browser."""
+    """Generator for MJPEG live camera streaming to browser with true Dahua multi-channel support."""
     stream = STREAMS.get(camera_id)
-    if not stream:
-        return
+    is_hanout_dahua = (camera_id == "cam_hanout_caisse")
 
     while True:
-        frame = stream.get_latest_frame()
+        frame = None
+        if is_hanout_dahua and channel > 0:
+            frame = dahua_pool.get_frame(channel)
+
+        # Fallback to base stream if pool frame is not ready
+        if frame is None and stream:
+            frame = stream.get_latest_frame()
+
         if frame is None:
             time.sleep(0.05)
             continue
@@ -111,25 +119,31 @@ def generate_mjpeg(camera_id: str, show_ai: bool = True, channel: int = 1):
 
         # Draw Channel Title Banner
         ch_names = {
-            1: "CH-01: CAISSE & COMPTOIR",
-            2: "CH-02: ENTREE PRINCIPALE",
-            3: "CH-03: RAYONS & PYJAMAS",
-            4: "CH-04: CABINES & STOCK"
+            1: "CH-01: ENTREE PRINCIPALE & DEVANTURE",
+            2: "CH-02: CAMERA 2",
+            3: "CH-03: VUE GLOBALE DU MAGASIN & CAISSE",
+            4: "CH-04: ALLÉE CENTRALE & RAYONS PYJAMAS",
+            5: "CH-05: COULOIR VITRINE & MANNEQUINS",
+            6: "CH-06: RAYONS & EXPOSITION",
+            7: "CH-07: ESPACE CABINES D'ESSAYAGE",
+            8: "CH-08: TABLES DE PRESENTATION",
+            9: "CH-09: LA CAISSE (SURVEILLANCE COMPTOIR DIRECTE)",
+            10: "CH-10: ARRIERE BOUTIQUE & STOCK",
+            16: "CH-16: VUE COMPLETE DU MAGASIN"
         }
-        ch_label = ch_names.get(channel, f"CH-{channel:02d}")
+        ch_label = ch_names.get(channel, f"DAHUA CH-{channel:02d}")
         cv2.putText(annotated, ch_label, (20, h - 25), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 255, 255), 2)
 
-        if show_ai and camera_id == "cam_hanout_caisse" and channel == 1:
-            # Draw AI Zone Overlay (Zone de Caisse in Red, Zone Attente in Blue)
-            # 1. Zone Caisse
-            cv2.rectangle(annotated, (int(w * 0.35), int(h * 0.45)), (int(w * 0.65), int(h * 0.85)), (0, 0, 255), 2)
-            cv2.putText(annotated, "ZONE CAISSE (AI)", (int(w * 0.35) + 5, int(h * 0.45) - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-
-            # 2. Zone Attente Client
-            cv2.rectangle(annotated, (int(w * 0.05), int(h * 0.30)), (int(w * 0.30), int(h * 0.90)), (255, 180, 0), 2)
-            cv2.putText(annotated, "ZONE ATTENTE", (int(w * 0.05) + 5, int(h * 0.30) - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 180, 0), 2)
+        if show_ai and is_hanout_dahua and (channel in [1, 3, 9]):
+            # Draw AI Caisse Detection Zone
+            if channel == 9: # Overhead counter
+                cv2.rectangle(annotated, (int(w * 0.15), int(h * 0.20)), (int(w * 0.85), int(h * 0.85)), (0, 0, 255), 2)
+                cv2.putText(annotated, "ZONE COMPTOIR CAISSE (AI)", (int(w * 0.15) + 5, int(h * 0.20) - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 0, 255), 2)
+            else:
+                cv2.rectangle(annotated, (int(w * 0.35), int(h * 0.45)), (int(w * 0.65), int(h * 0.85)), (0, 0, 255), 2)
+                cv2.putText(annotated, "ZONE CAISSE (AI)", (int(w * 0.35) + 5, int(h * 0.45) - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
         # Encode JPEG
         ret, jpeg = cv2.imencode('.jpg', annotated, [cv2.IMWRITE_JPEG_QUALITY, 75])

@@ -122,6 +122,16 @@ class DailyWorkerReporter:
         """
         date_str = target_date or datetime.now().strftime("%Y-%m-%d")
         workers = self.face_rec.get_all_workers()
+
+        # If local registry is empty, sync from Supabase cloud database
+        if not workers and self.supabase.client:
+            try:
+                sb_res = self.supabase.client.table("workers").select("*").eq("is_active", True).execute()
+                if sb_res.data:
+                    workers = sb_res.data
+            except Exception as ex:
+                print(f"[DailyReporter] Supabase worker fetch error: {ex}")
+
         results = []
 
         print(f"\n[DailyReporter] === STARTING 00:00 MIDNIGHT DISPATCH FOR {len(workers)} WORKERS ===")

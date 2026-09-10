@@ -11,6 +11,7 @@ from engine.telegram_bot import TelegramNotifier
 from engine.supabase_sync import SupabaseSync
 from engine.config import (
     CAISSE_UNATTENDED_THRESHOLD_SECONDS,
+    EMPTY_COUNTER_THRESHOLD_SECONDS,
     PRE_EVENT_BUFFER_SECONDS,
     POST_EVENT_BUFFER_SECONDS,
     ABNORMAL_DISCOUNT_THRESHOLD_DZD,
@@ -31,6 +32,8 @@ class CaisseDetector:
         self.drawer_was_open = False
         self.drawer_open_start_time: Optional[float] = None
         self.unattended_alert_triggered = False
+        self.cashier_absent_start_time: Optional[float] = None
+        self.empty_counter_alert_triggered = False
         self.last_event_time = 0
         self.cooldown_seconds = 15 # Prevent alert spamming
 
@@ -75,6 +78,23 @@ class CaisseDetector:
             self.drawer_open_start_time = None
             self.unattended_alert_triggered = False
             print(f"[CaisseDetector] Cash Drawer Closed (Was open for {open_duration}s)")
+
+        # -------------------------------------------------------------
+        # 4. Check Empty Counter / Caisse Abandoned (No worker > 2 min)
+        # -------------------------------------------------------------
+        if not cashier_present:
+            if self.cashier_absent_start_time is None:
+                self.cashier_absent_start_time = current_time
+            else:
+                absent_duration = current_time - self.cashier_absent_start_time
+                if absent_duration >= EMPTY_COUNTER_THRESHOLD_SECONDS and not self.empty_counter_alert_triggered:
+                    self.empty_counter_alert_triggered = True
+                    self._trigger_empty_counter_alert(current_time, int(absent_duration))
+        else:
+            if self.cashier_absent_start_time is not None:
+                # Cashier returned to workstation
+                self.cashier_absent_start_time = None
+                self.empty_counter_alert_triggered = False
 
     def handle_pos_discount_event(self, original_price: float, paid_price: float, discount_amount: float, ticket_id: str):
         """
@@ -122,6 +142,24 @@ class CaisseDetector:
             title=title,
             details=details,
             severity="critical",
+            duration_seconds=elapsed_seconds,
+            event_timestamp=event_time
+        )
+
+    def _trigger_empty_counter_alert(self, event_time: float, elapsed_seconds: int):
+        self.last_event_time = event_time
+        mins = elapsed_seconds // 60
+        secs = elapsed_seconds % 60
+        duration_str = f"{mins} دقيقة" if secs == 0 else f"{mins} دقيقة و {secs} ثانية"
+        title = f"مغادرة الكونتوار وترك لاكيس شاغرة ({duration_str})"
+        details = f"الكونتوار فارغ تماماً وبدون أي عامل أو مسؤول عند نقطة البيع لمدة فاقت {duration_str}. يرجى التحقق من حراسة المحل."
+        print(f"[CaisseDetector] TRIGGERED: {title}")
+
+        self._record_and_dispatch_event(
+            event_type="caisse_unattended",
+            title=title,
+            details=details,
+            severity="warning",
             duration_seconds=elapsed_seconds,
             event_timestamp=event_time
         )

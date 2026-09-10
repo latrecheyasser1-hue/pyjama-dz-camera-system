@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Camera, Eye, EyeOff, Radio, Grid, Layout, Sliders, RefreshCw, Store, Package, Scissors, Scan, CheckCircle2, Globe, Server, Check } from 'lucide-react';
-import { getStreamServerUrl, setStreamServerUrl } from '../lib/streamConfig';
+import { getStreamServerUrl, setStreamServerUrl, syncCloudStreamUrl } from '../lib/streamConfig';
 
 export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZoneEditor }) {
   const [showAI, setShowAI] = useState(true);
@@ -24,6 +24,14 @@ export default function LiveCameraFeed({ activeCamera, onCameraChange, onOpenZon
     cashier_present: true,
     sim_scenario: 'normal'
   });
+
+  // Automatically sync Cloud Stream URL from Supabase on load
+  useEffect(() => {
+    syncCloudStreamUrl((newCloudUrl) => {
+      setCurrentServerUrl(newCloudUrl);
+      setCustomServerInput(newCloudUrl);
+    });
+  }, []);
 
   // Fetch actually discovered cameras from Dahua DVR
   useEffect(() => {
